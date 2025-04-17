@@ -24,6 +24,9 @@ export function useAuth() {
     setError(null);
     try {
       const response = await authService.login(data);
+      if(response?.tenantId){
+        localStorage.setItem('tenantId', response?.tenantId);
+      }
       return response;
     } catch (err: any) {
       setError(err.message);

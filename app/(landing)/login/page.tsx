@@ -20,6 +20,7 @@ import { Loader2, Mail, Lock, ArrowLeft, Zap } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 
+
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
@@ -40,6 +41,7 @@ export default function LoginPage() {
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     try {
+      console.error("Login started");
       await login(values);
       toast({
         title: "Success",
@@ -47,11 +49,16 @@ export default function LoginPage() {
       });
       router.push("/dashboard");
     } catch {
+      console.error("Login failed");
       toast({
         title: "Error",
-        description: error || "Invalid email or password. Please try again.",
         variant: "destructive",
+
+
+        description: "Invalid username or password!",
+
       });
+      
     }
   };
 

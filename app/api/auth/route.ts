@@ -81,11 +81,11 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
             }
 
-            const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, JWT_SECRET, {
+            const token = jwt.sign({ id: user._id, email: user.email, role: user.role, tenantId:user.tenantId }, JWT_SECRET, {
                 expiresIn: '1d',
             });
 
-            const response = NextResponse.json({ message: 'Login successful' });
+            const response = NextResponse.json({ id: user._id, email: user.email, role: user.role, tenantId:user.tenantId ,message: 'Login successful' });
             response.cookies.set('authToken', token, { httpOnly: true, path: '/', maxAge: 86400 });
             return response;
         } catch (error) {

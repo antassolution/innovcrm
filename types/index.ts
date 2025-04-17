@@ -41,6 +41,7 @@ export interface Activity {
 }
 
 export interface Contact {
+  _id: string;
   id: string;
   firstName: string;
   lastName: string;
@@ -124,6 +125,8 @@ export interface ContactFilters {
   tags: string[];
   groups: string[];
   assignedTo?: string;
+  page?: number; // Added for pagination
+  limit?: number; // Added for pagination
 }
 
 export const dealSchema = z.object({

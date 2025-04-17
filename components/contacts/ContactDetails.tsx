@@ -66,7 +66,7 @@ export function ContactDetails({ id }: { id: string }) {
             />
           </div>
           <div>
-            <ContactActivityLog contactId={contact.id} />
+            <ContactActivityLog contactId={contact._id} />
           </div>
         </div>
       </div>

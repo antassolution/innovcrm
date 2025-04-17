@@ -28,9 +28,9 @@ interface ContactListProps {
 
 const categoryColors = {
   lead: "secondary",
-  prospect: "warning",
+  prospect: "outline",
   customer: "success",
-  partner: "primary",
+  partner: "default",
 } as const;
 
 export function ContactList({
@@ -124,7 +124,7 @@ export function ContactList({
             <TableCell className="font-medium">{contact.firstName} {contact.lastName}</TableCell>
             <TableCell>{contact.companyId}</TableCell>
             <TableCell>
-              <Badge variant={categoryColors[contact.category]}>
+              <Badge variant={categoryColors[contact.category] as "default" | "secondary" | "destructive" | "outline"}>
                 {contact.category}
               </Badge>
             </TableCell>
@@ -134,7 +134,7 @@ export function ContactList({
               {contact.lastContact && format(new Date(contact.lastContact), "MMM d, yyyy")}
             </TableCell>
             <TableCell>
-              <Link href={`/contacts/${contact.id}`}>
+              <Link href={`/contacts/${contact._id}`}>
                 <Button variant="ghost" size="icon" title="View Details">
                   <Eye className="h-4 w-4" />
                 </Button>

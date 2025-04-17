@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Contact, SortField, SortOrder, ContactFilters } from "@/types";
+import { Contact, SortField, SortOrder, ContactFilters, PaginatedResult } from "@/types";
 import { contactService } from "@/services/contactService";
 import { ContactList } from "@/components/contacts/ContactList";
 import { ContactToolbar } from "@/components/contacts/ContactToolbar";
 import { ContactBulkActions } from "@/components/contacts/ContactBulkActions";
 import { useToast } from "@/hooks/use-toast";
+import { Pagination, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext } from "@/components/ui/pagination";
 
 export default function ContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<PaginatedResult<Contact>>();
   const [loading, setLoading] = useState(true);
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>("name");
@@ -29,7 +30,7 @@ export default function ContactsPage() {
   const loadContacts = async () => {
     try {
       const data = await contactService.getContacts();
-      setContacts(data?.data);
+      setContacts(data);
     } catch (error) {
       console.error("Failed to load contacts:", error);
       toast({
@@ -52,6 +53,7 @@ export default function ContactsPage() {
     setFilters({ ...filters, search: query });
     if (query.trim()) {
       const results = await contactService.searchContacts(query);
+
       setContacts(results);
     } else {
       loadContacts();
@@ -99,7 +101,7 @@ export default function ContactsPage() {
     }
   };
 
-  const sortedContacts = [...contacts].sort((a, b) => {
+  const sortedContacts = [...(contacts?.data || [])].sort((a, b) => {
     const modifier = sortOrder === "asc" ? 1 : -1;
     switch (sortField) {
       case "name":
@@ -154,6 +156,48 @@ export default function ContactsPage() {
             selectedContacts={selectedContacts}
             onSelectionChange={setSelectedContacts}
           />
+
+          <div className="flex justify-center mt-4">
+            <Pagination
+              className="flex items-center space-x-2"
+              currentPage={contacts?.pagination.page || 1}
+              totalPages={contacts?.pagination.totalPages || 1}
+              onPageChange={(page) => {
+                setFilters({ ...filters, page });
+                loadContacts();
+              }}
+            >
+              <PaginationPrevious
+                onClick={() => {
+                  if (contacts?.pagination.page > 1) {
+                    setFilters({ ...filters, page: contacts.pagination.page - 1 });
+                    loadContacts();
+                  }
+                }}
+              />
+              {Array.from({ length: contacts?.pagination.totalPages || 1 }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={page === contacts?.pagination.page}
+                    onClick={() => {
+                      setFilters({ ...filters, page });
+                      loadContacts();
+                    }}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationNext
+                onClick={() => {
+                  if (contacts?.pagination.page < (contacts?.pagination.totalPages || 1)) {
+                    setFilters({ ...filters, page: contacts.pagination.page + 1 });
+                    loadContacts();
+                  }
+                }}
+              />
+            </Pagination>
+          </div>
         </div>
       </div>
     </div>

@@ -62,44 +62,58 @@ export function ContactForm({
 
   const form = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
-    defaultValues: contact ? {
-      firstName: contact.firstName.split(' ')[0],
-      lastName: contact.lastName.split(' ').slice(1).join(' '),
-      email: contact.email,
-      phone: contact.phone,
-      mobile: contact.mobile || '',
-      jobTitle: contact.position,
-      department: contact.department || '',
-      companyId: contact.companyId,
-      category: contact.category,
-      notes: contact.notes,
-    } : {
-      firstName: "",
-      lastName: "",
-      email: "",
-      phone: "",
-      mobile: "",
-      jobTitle: "",
-      department: "",
-      companyId: "",
-      category: "lead",
-      notes: "",
-    },
+    defaultValues: contact
+      ? {
+          firstName: contact.firstName.split(" ")[0],
+          lastName: contact.lastName.split(" ").slice(1).join(" "),
+          email: contact.email,
+          phone: contact.phone,
+          mobile: contact.mobile || "",
+          jobTitle: contact.position,
+          department: contact.department || "",
+          companyId: contact.companyId,
+          category: contact.category,
+          notes: contact.notes,
+        }
+      : {
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          mobile: "",
+          jobTitle: "",
+          department: "",
+          companyId: "",
+          category: "lead",
+          notes: "",
+        },
   });
 
   const onSubmit = async (values: z.infer<typeof contactSchema>) => {
     try {
       setLoading(true);
 
-      const isDuplicate = await contactService.checkDuplicate(values.email, values.phone || '');
-      console.log('isDuplicate', isDuplicate);  
-      if (isDuplicate) {
-        toast({
-          title: "Duplicate Contact",
-          description: "A contact with this email or phone number already exists.",
-          variant: "destructive",
-        });
-        return;
+      if (
+        !contact ||
+        (contact &&
+          (contact.email !== values.email || contact.phone !== values.phone))
+      ) {
+        const isDuplicate = await contactService.checkDuplicate(
+          values.email,
+          values.phone || ""
+        );
+        console.log("isDuplicate--", isDuplicate);
+        if (isDuplicate) {
+          console.log("toast", isDuplicate);
+
+          toast({
+            title: "Duplicate Contact",
+            description:
+              "A contact with this email or phone number already exists.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
       const contactData = {
@@ -109,7 +123,7 @@ export function ContactForm({
       };
 
       if (contact) {
-        await contactService.updateContact(contact.id, contactData);
+        await contactService.updateContact(contact._id, contactData);
         toast({
           title: "Contact Updated",
           description: "The contact has been updated successfully.",
@@ -141,7 +155,9 @@ export function ContactForm({
           <div className="p-6 space-y-8">
             {/* Personal Information */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Personal Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Personal Information
+              </h2>
               <div className="grid gap-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
@@ -180,7 +196,11 @@ export function ContactForm({
                     <FormItem>
                       <FormLabel>Email Address *</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="john@example.com" {...field} />
+                        <Input
+                          type="email"
+                          placeholder="john@example.com"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -223,7 +243,9 @@ export function ContactForm({
 
             {/* Professional Information */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Professional Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Professional Information
+              </h2>
               <div className="grid gap-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
@@ -261,10 +283,19 @@ export function ContactForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Company </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={isLoadingCompanies ? "Loading..." : "Select a company"} />
+                            <SelectValue
+                              placeholder={
+                                isLoadingCompanies
+                                  ? "Loading..."
+                                  : "Select a company"
+                              }
+                            />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -286,7 +317,10 @@ export function ContactForm({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category *</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
@@ -314,7 +348,9 @@ export function ContactForm({
 
             {/* Additional Information */}
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Additional Information</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Additional Information
+              </h2>
               <FormField
                 control={form.control}
                 name="notes"
