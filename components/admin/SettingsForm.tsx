@@ -34,6 +34,7 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MasterDataManager } from "./MasterDataManager";
 
 interface SettingsFormProps {
   settings: SystemSettings | null;
@@ -77,6 +78,7 @@ const fiscalYearStartOptions = [
 
 export function SettingsForm({ settings, onSuccess }: SettingsFormProps) {
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("general");
   const { toast } = useToast();
 
   const defaultValues: SystemSettings = {
@@ -94,8 +96,6 @@ export function SettingsForm({ settings, onSuccess }: SettingsFormProps) {
     salesSettings: {
       defaultSalesTax: 0,
       fiscalYearStart: '01-01',
-      dealStages: ['qualification', 'meeting', 'proposal', 'negotiation', 'closing'],
-      leadSources: ['website', 'referral', 'social-media', 'event', 'other'],
     },
     emailSettings: {
       smtpServer: '',
@@ -141,12 +141,18 @@ export function SettingsForm({ settings, onSuccess }: SettingsFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid grid-cols-4 mb-8">
+        <Tabs 
+          defaultValue="general" 
+          value={activeTab} 
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="company">Company Information</TabsTrigger>
             <TabsTrigger value="sales">Sales Settings</TabsTrigger>
             <TabsTrigger value="email">Email Settings</TabsTrigger>
+            <TabsTrigger value="master-data">Master Data</TabsTrigger>
           </TabsList>
           
           <TabsContent value="general">
@@ -478,47 +484,20 @@ export function SettingsForm({ settings, onSuccess }: SettingsFormProps) {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="salesSettings.dealStages"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deal Stages</FormLabel>
-                      <FormControl>
-                        <Input 
-                          value={field.value.join(', ')}
-                          onChange={e => field.onChange(e.target.value.split(',').map(item => item.trim()))}
-                          placeholder="qualification, meeting, proposal, negotiation, closing"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter comma-separated deal stages
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="salesSettings.leadSources"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lead Sources</FormLabel>
-                      <FormControl>
-                        <Input 
-                          value={field.value.join(', ')}
-                          onChange={e => field.onChange(e.target.value.split(',').map(item => item.trim()))}
-                          placeholder="website, referral, social-media, event, other"
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Enter comma-separated lead sources
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="text-sm text-muted-foreground">
+                    <p>Deal Stages and Lead Sources are now managed in the Master Data tab.</p>
+                    <div className="mt-2">
+                      <Button 
+                        variant="outline" 
+                        type="button" 
+                        onClick={() => setActiveTab("master-data")}
+                      >
+                        Manage Master Data
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -634,14 +613,20 @@ export function SettingsForm({ settings, onSuccess }: SettingsFormProps) {
               </CardContent>
             </Card>
           </TabsContent>
+          
+          <TabsContent value="master-data">
+            <MasterDataManager onSuccess={onSuccess} />
+          </TabsContent>
         </Tabs>
         
-        <div className="flex justify-end">
-          <Button type="submit" disabled={loading}>
-            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Settings
-          </Button>
-        </div>
+        {activeTab !== "master-data" && (
+          <div className="flex justify-end">
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Settings
+            </Button>
+          </div>
+        )}
       </form>
     </Form>
   );

@@ -6,6 +6,8 @@ export interface ContactActivity extends Document {
   title: string;
   description: string;
   date: Date;
+    tenantId: Schema.Types.ObjectId;
+  
 }
 
 const ContactActivitySchema = new Schema<ContactActivity>({
@@ -14,6 +16,8 @@ const ContactActivitySchema = new Schema<ContactActivity>({
   title: { type: String, required: true },
   description: { type: String, required: true },
   date: { type: Date, required: true , index: true},
+      tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
+  
 });
 
 const ContactActivityModel = mongoose.models.ContactActivity || mongoose.model<ContactActivity>('ContactActivity', ContactActivitySchema);

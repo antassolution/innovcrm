@@ -13,6 +13,8 @@ export interface IContact extends Document {
   note:string;
   createdAt: Date;
   updatedAt: Date;
+  tenantId: Schema.Types.ObjectId;
+
 }
 
 const ContactSchema: Schema = new Schema<IContact>(
@@ -27,6 +29,8 @@ const ContactSchema: Schema = new Schema<IContact>(
     groups: { type: [String], default: [] },
     lastContact: { type: Date },
     note: { type: String },
+    tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
+
   },
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );

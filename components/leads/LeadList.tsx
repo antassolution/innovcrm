@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { LeadAssignDialog } from "./LeadAssignDialog";
 import { Pagination } from "@/components/ui/pagination";
 import { useUsers } from "@/hooks/useUsers";
+import { masterDataService } from "@/services/masterDataService";
 
 interface LeadListProps {
   leads: PaginatedResult<Lead>;
@@ -58,16 +59,57 @@ export function LeadList({ leads, loading, onRefresh, onPageChange }: LeadListPr
 
   const handleConvert = async (id: string) => {
     try {
-      await leadService.convertToOpportunity(id);
-      toast({
-        title: "Success",
-        description: "Lead converted to opportunity successfully.",
-      });
+      // Get lead stages from master data
+      const leadStages = await masterDataService.getMasterDataByCategory('lead-stages');
+      
+      // Get the current lead to check its status
+      const currentLead = await leadService.getLeadById(id);
+      
+      if (!currentLead) {
+        throw new Error("Lead not found");
+      }
+      
+      // Sort stages by display order to ensure correct progression
+      const sortedStages = [...leadStages].sort((a, b) => 
+        (a.displayOrder || 0) - (b.displayOrder || 0)
+      );
+      
+      // Find the current stage index
+      const currentStageIndex = sortedStages.findIndex(
+        stage => stage.value === currentLead.status
+      );
+      
+      // If current stage not found or it's the last stage, handle appropriately
+      if (currentStageIndex === -1) {
+        // If status doesn't match any stage, set to first stage
+        await leadService.updateLead(id, { status: (sortedStages[0]?.value as 'new' | 'contacted' | 'qualified' | 'lost') || 'new' });
+        toast({
+          title: "Lead Stage Updated",
+          description: `Lead set to ${sortedStages[0]?.name || 'new'} stage.`,
+        });
+      } else if (currentStageIndex >= sortedStages.length - 1) {
+        // If it's the final stage, convert to opportunity
+        await leadService.convertToOpportunity(id);
+        toast({
+          title: "Lead Converted",
+          description: "Lead successfully converted to opportunity.",
+        });
+      } else {
+        // Move to next stage
+        const nextStage = sortedStages[currentStageIndex + 1];
+        await leadService.updateLead(id, { status: nextStage.value as 'new' | 'contacted' | 'qualified' | 'lost' });
+        toast({
+          title: "Lead Stage Advanced",
+          description: `Lead moved to ${nextStage.name} stage.`,
+        });
+      }
+      
       onRefresh();
     } catch (error) {
+      console.error("Error converting lead:", error);
       toast({
         title: "Error",
-        description: "Failed to convert lead. Please try again.",
+        description: "Failed to advance lead stage. Please try again.",
         variant: "destructive",
       });
     }
@@ -166,7 +208,7 @@ export function LeadList({ leads, loading, onRefresh, onPageChange }: LeadListPr
                 </Badge>
               </TableCell>
               <TableCell>
-                {lead.assignedTo ? users?.find(rep => rep._id === lead.assignedTo)?.firstName : "-"}
+                {lead.assignedTo ? salesUsers?.find(rep => rep._id === lead.assignedTo)?.firstName : "-"}
               </TableCell>
               <TableCell>
                 {format(new Date(lead.createdAt), "MMM d, yyyy")}

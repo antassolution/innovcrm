@@ -1,111 +1,77 @@
 import { Deal } from '@/types';
+import httpClient from '@/lib/httpClient';
 
-// Mock data for deals
-let deals: Deal[] = [
-  {
-    id: '1',
-    title: 'Enterprise Software License',
-    value: 50000,
-    customerId: '1',
-    status: 'negotiation',
-    stage: 'negotiation',
-    probability: 75,
-    expectedCloseDate: '2024-04-15',
-    notes: 'Final contract review in progress',
-    assignedTo: 'user1',
-    createdAt: '2024-03-01',
-    updatedAt: '2024-03-20',
-  },
-  {
-    id: '2',
-    title: 'Consulting Services',
-    value: 25000,
-    customerId: '2',
-    status: 'proposal',
-    stage: 'proposal',
-    probability: 50,
-    expectedCloseDate: '2024-04-30',
-    notes: 'Proposal submitted, awaiting feedback',
-    assignedTo: 'user2',
-    createdAt: '2024-03-10',
-    updatedAt: '2024-03-18',
-  },
-];
 
+/**
+ * Service for interacting with the deal-related API endpoints
+ */
 export const dealService = {
-  getDeals: async (): Promise<Deal[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return deals;
-  },
-
-  getDealById: async (id: string): Promise<Deal | undefined> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return deals.find(deal => deal.id === id);
-  },
-
-  createDeal: async (data: Omit<Deal, 'id' | 'createdAt' | 'updatedAt'>): Promise<Deal> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newDeal: Deal = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    deals.push(newDeal);
-    return newDeal;
-  },
-
-  updateDeal: async (id: string, data: Partial<Deal>): Promise<Deal> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const index = deals.findIndex(deal => deal.id === id);
-    if (index === -1) throw new Error('Deal not found');
+  /**
+   * Fetch all deals with optional filtering
+   */
+  async getDeals(filters: Record<string, any> = {}, page = 1, limit = 10): Promise<{data: Deal[], pagination: any}> {
+    const queryParams = new URLSearchParams({
+      ...filters,
+      page: page.toString(),
+      limit: limit.toString(),
+    });
     
-    deals[index] = {
-      ...deals[index],
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-    return deals[index];
+    const response = await httpClient.get(`/api/deals?${queryParams}`);
+    return response.data;
   },
-
-  deleteDeal: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    deals = deals.filter(deal => deal.id !== id);
+  
+  /**
+   * Fetch a specific deal by ID
+   */
+  async getDealById(id: string): Promise<Deal> {
+    const response = await httpClient.get(`/api/deals/${id}`);
+    return response.data.data;
   },
-
-  getDealsByStatus: async (status: Deal['status']): Promise<Deal[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return deals.filter(deal => deal.status === status);
+  
+  /**
+   * Create a new deal
+   */
+  async createDeal(dealData: Partial<Deal>): Promise<Deal> {
+    const response = await httpClient.post('/api/deals', dealData);
+    return response.data.data;
   },
-
-  getForecast: async (): Promise<{ 
-    totalValue: number;
-    weightedValue: number;
-    byStage: { stage: string; count: number; value: number }[];
-  }> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    const totalValue = deals.reduce((sum, deal) => sum + deal.value, 0);
-    const weightedValue = deals.reduce((sum, deal) => sum + (deal.value * deal.probability / 100), 0);
-    
-    const byStage = Object.entries(
-      deals.reduce((acc, deal) => {
-        if (!acc[deal.stage]) {
-          acc[deal.stage] = { count: 0, value: 0 };
-        }
-        acc[deal.stage].count++;
-        acc[deal.stage].value += deal.value;
-        return acc;
-      }, {} as Record<string, { count: number; value: number }>)
-    ).map(([stage, data]) => ({
-      stage,
-      ...data,
-    }));
-
-    return {
-      totalValue,
-      weightedValue,
-      byStage,
-    };
+  
+  /**
+   * Update an existing deal by ID
+   */
+  async updateDeal(id: string, dealData: Partial<Deal>): Promise<Deal> {
+    const response = await httpClient.patch(`/api/deals/${id}`, dealData);
+    return response.data.data;
   },
+  
+  /**
+   * Delete a deal by ID
+   */
+  async deleteDeal(id: string): Promise<void> {
+    await httpClient.delete(`/api/deals/${id}`);
+  },
+  
+  /**
+   * Get deals by customer ID
+   */
+  async getDealsByCustomer(customerId: string): Promise<Deal[]> {
+    const response = await httpClient.get(`/api/deals?customerId=${customerId}`);
+    return response.data.data;
+  },
+  
+  /**
+   * Get deals assigned to a specific user
+   */
+  async getDealsByAssignee(userId: string): Promise<Deal[]> {
+    const response = await httpClient.get(`/api/deals?assignedTo=${userId}`);
+    return response.data.data;
+  },
+  
+  /**
+   * Get deals by status (active, won, lost)
+   */
+  async getDealsByStatus(status: 'active' | 'won' | 'lost'): Promise<Deal[]> {
+    const response = await httpClient.get(`/api/deals?status=${status}`);
+    return response.data.data;
+  }
 };

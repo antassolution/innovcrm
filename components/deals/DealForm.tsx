@@ -26,26 +26,34 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Info } from "lucide-react";
-import { useCustomers } from "@/hooks/useCustomers";
-import { salesReps } from "@/components/leads/LeadForm";
+import { useUsers } from "@/hooks/useUsers";
+import { usePipelineStages } from "@/hooks/usePipelineStages";
+import { useContacts } from "@/hooks/useContacts";
 
 interface DealFormProps {
   deal?: Deal;
   onSuccess: () => void;
 }
 
-const stages = [
-  { value: 'qualification', label: 'Qualification' },
-  { value: 'meeting', label: 'Meeting' },
-  { value: 'proposal', label: 'Proposal' },
-  { value: 'negotiation', label: 'Negotiation' },
-  { value: 'closing', label: 'Closing' },
+// Status options for deals
+const statusOptions = [
+  { value: 'active', label: 'Active' },
+  { value: 'won', label: 'Won' },
+  { value: 'lost', label: 'Lost' },
 ];
 
 export function DealForm({ deal, onSuccess }: DealFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { data: customers, isLoading: isLoadingCustomers } = useCustomers();
+  const { data: customers, isLoading: isLoadingCustomers } = useContacts();
+  const { data: pipelineStages, isLoading: isLoadingStages } = usePipelineStages();
+  const { users, loading: loadingUsers } = useUsers();
+    
+  console.log("Pipeline Stages:", pipelineStages);
+  // Filter users to only include sales reps and management
+  const salesUsers = users?.filter(user => 
+    user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
+  ) || [];
 
   const form = useForm({
     resolver: zodResolver(dealSchema),
@@ -53,19 +61,29 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
       title: "",
       value: 0,
       customerId: "",
-      stage: "qualification",
+      stageId: "",
       probability: 20,
       expectedCloseDate: new Date().toISOString().split('T')[0],
       notes: "",
       assignedTo: "",
+      status: "active",
+      contactPerson: "",
+      contactEmail: "",
+      contactPhone: "",
+      lostReason: "",
+      nextActionDate: "",
+      nextActionDescription: "",
     },
   });
+
+  // Watch the status field to conditionally show lost reason
+  const watchStatus = form.watch("status");
 
   const onSubmit = async (values: any) => {
     try {
       setLoading(true);
       if (deal) {
-        await dealService.updateDeal(deal.id, values);
+        await dealService.updateDeal(deal._id, values);
         toast({
           title: "Deal Updated",
           description: "The deal has been updated successfully.",
@@ -171,9 +189,9 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {customers?.map((customer) => (
-                            <SelectItem key={customer.id} value={customer.id}>
-                              {customer.name} - {customer.company}
+                          {customers?.data?.map((customer) => (
+                            <SelectItem key={customer._id} value={customer._id}>
+                              {customer.firstName} - {customer.lastName}  - {customer.company}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -194,20 +212,20 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
                 <div className="grid gap-4 md:grid-cols-2">
                   <FormField
                     control={form.control}
-                    name="stage"
+                    name="stageId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stage *</FormLabel>
+                        <FormLabel>Pipeline Stage *</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select stage" />
+                              <SelectValue placeholder={isLoadingStages ? "Loading..." : "Select stage"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {stages.map((stage) => (
-                              <SelectItem key={stage.value} value={stage.value}>
-                                {stage.label}
+                            {pipelineStages?.map((stage) => (
+                              <SelectItem key={stage.id} value={stage.id}>
+                                {stage.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -242,6 +260,55 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
 
                 <FormField
                   control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Deal Status *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {statusOptions.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription className="flex items-center gap-1">
+                        <Info className="h-3 w-3" />
+                        Current status of the deal
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {watchStatus === "lost" && (
+                  <FormField
+                    control={form.control}
+                    name="lostReason"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Lost Reason</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder="Reason why the deal was lost..."
+                            className="resize-none"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
+                <FormField
+                  control={form.control}
                   name="assignedTo"
                   render={({ field }) => (
                     <FormItem>
@@ -249,13 +316,13 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select sales representative" />
+                            <SelectValue placeholder={loadingUsers ? "Loading..." : "Select sales representative"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {salesReps.map((rep) => (
-                            <SelectItem key={rep.id} value={rep.id}>
-                              {rep.name}
+                          {salesUsers?.map((rep) => (
+                            <SelectItem key={rep._id} value={rep._id}>
+                              {rep.firstName} {rep.lastName}  
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -264,25 +331,118 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
                     </FormItem>
                   )}
                 />
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200" />
+
+            {/* Contact Information */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Contact Information</h2>
+              <div className="grid gap-4 md:grid-cols-3">
+                <FormField
+                  control={form.control}
+                  name="contactPerson"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Person</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Smith" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
-                  name="notes"
+                  name="contactEmail"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Notes</FormLabel>
+                      <FormLabel>Contact Email</FormLabel>
                       <FormControl>
-                        <Textarea
-                          placeholder="Add any relevant notes about the deal..."
-                          className="min-h-[120px] resize-none"
-                          {...field}
-                        />
+                        <Input placeholder="john@example.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="contactPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Phone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+1 (555) 123-4567" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+            </div>
+
+            <div className="border-t border-gray-200" />
+
+            {/* Next Action */}
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Next Steps</h2>
+              <div className="grid gap-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="nextActionDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Next Action Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nextActionDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Next Action</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Follow up call" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200" />
+
+            {/* Notes */}
+            <div>
+              <FormField
+                control={form.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Add any relevant notes about the deal..."
+                        className="min-h-[120px] resize-none"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           </div>
 

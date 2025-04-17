@@ -9,8 +9,8 @@ export async function GET(
   await dbConnect();
   
   try {
-    const lead = await Lead.findById(params.id)
-      .populate('assignedTo', 'firstName lastName');
+    const lead = await Lead.findById(params.id);
+     // .populate('assignedTo', 'firstName lastName');
       
     if (!lead) {
       return NextResponse.json(

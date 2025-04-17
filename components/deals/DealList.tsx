@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Eye, CheckCircle2, XCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { salesReps } from "@/components/leads/LeadForm";
 import { DealStatusDialog } from "./DealStatusDialog";
+import { useUsers } from "@/hooks/useUsers";
 
 interface DealListProps {
   deals: Deal[];
@@ -36,6 +36,15 @@ const statusColors = {
 export function DealList({ deals, loading, onRefresh }: DealListProps) {
   const [selectedDeal, setSelectedDeal] = useState<string | null>(null);
   const [statusAction, setStatusAction] = useState<"won" | "lost" | null>(null);
+
+
+  const { users, loading: loadingUsers } = useUsers();
+      
+        
+        // Filter users to only include sales reps and management
+        const salesUsers = users?.filter(user => 
+          user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
+        ) || [];
 
   const handleStatusChange = (dealId: string, action: "won" | "lost") => {
     setSelectedDeal(dealId);
@@ -75,7 +84,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
         </TableHeader>
         <TableBody>
           {deals?.map((deal) => (
-            <TableRow key={deal.id}>
+            <TableRow key={deal._id}>
               <TableCell className="font-medium">{deal.title}</TableCell>
               <TableCell>${deal.value.toLocaleString()}</TableCell>
               <TableCell>
@@ -85,7 +94,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
               </TableCell>
               <TableCell>{deal.probability}%</TableCell>
               <TableCell>
-                {deal.assignedTo ? salesReps.find(rep => rep.id === deal.assignedTo)?.name : "-"}
+                {deal.assignedTo ? salesUsers?.find(rep => rep._id === deal.assignedTo)?.firstName : "-"}
               </TableCell>
               <TableCell>
                 {format(new Date(deal.expectedCloseDate), "MMM d, yyyy")}
@@ -97,7 +106,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Link href={`/deals/${deal.id}`}>
+                  <Link href={`/deals/${deal._id}`}>
                     <Button variant="ghost" size="icon" title="View Details">
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -108,7 +117,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
                         variant="ghost"
                         size="icon"
                         title="Mark as Won"
-                        onClick={() => handleStatusChange(deal.id, "won")}
+                        onClick={() => handleStatusChange(deal._id, "won")}
                       >
                         <CheckCircle2 className="h-4 w-4 text-green-600" />
                       </Button>
@@ -116,7 +125,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
                         variant="ghost"
                         size="icon"
                         title="Mark as Lost"
-                        onClick={() => handleStatusChange(deal.id, "lost")}
+                        onClick={() => handleStatusChange(deal._id, "lost")}
                       >
                         <XCircle className="h-4 w-4 text-red-600" />
                       </Button>

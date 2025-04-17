@@ -42,7 +42,7 @@ if(!body?.companyId)
     body.companyId = undefined
 }
   await dbConnect();
-  const newContact = new Contact(body);
+  const newContact = new Contact({...body,tenantId: params.tenantId});
   await newContact.save();
 
   return NextResponse.json(newContact, { status: 201 });
@@ -93,6 +93,7 @@ export async function PATCH(req: Request, { params }: { params: { tenantId: stri
           lastName: `Last ${batchStart + i + 1}`,
           email: `contact-${batchStart + i + 1}@example.com`,
           phone: `123451${(batchStart + i) % 10}`,
+          tenantId:'67fe58cce758ff4f71356f41'
         })
       );
 
@@ -109,6 +110,7 @@ export async function PATCH(req: Request, { params }: { params: { tenantId: stri
           title: `Action ${j + 1}`,
           description: `description ${j + 1}`,
           date: new Date(),
+          tenentId:'67fe58cce758ff4f71356f41'
         }))
       );
 

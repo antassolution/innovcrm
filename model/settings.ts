@@ -26,8 +26,7 @@ const CompanyInfoSchema = new Schema({
 const SalesSettingsSchema = new Schema({
   defaultSalesTax: { type: Number, default: 0 },
   fiscalYearStart: { type: String, default: '01-01' },
-  dealStages: { type: [String], default: ['qualification', 'meeting', 'proposal', 'negotiation', 'closing'] },
-  leadSources: { type: [String], default: ['website', 'referral', 'social-media', 'event', 'other'] },
+
 });
 
 const EmailSettingsSchema = new Schema({

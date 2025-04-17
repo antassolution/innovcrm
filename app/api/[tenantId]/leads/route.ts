@@ -52,7 +52,7 @@ export async function POST(
     await dbConnect();
     const data = await req.json();
     
-    const lead = new Lead(data);
+    const lead = new Lead({...data,tenantId:params.tenantId});
     await lead.save();
     
     return NextResponse.json(lead, { status: 201 });

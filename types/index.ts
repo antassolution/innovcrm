@@ -10,22 +10,51 @@ export interface Customer {
   lastContact: string;
 }
 
+// Deal schema definition
+export const dealSchema = z.object({
+  title: z.string().min(1, "Deal title is required"),
+  value: z.number().min(0, "Value cannot be negative"),
+  customerId: z.string().min(1, "Customer is required"),
+  stageId: z.string().min(1, "Pipeline stage is required"),
+  probability: z.number().min(0, "Minimum is 0%").max(100, "Maximum is 100%"),
+  expectedCloseDate: z.string().min(1, "Expected close date is required"),
+  notes: z.string().optional(),
+  assignedTo: z.string().min(1, "Deal must be assigned to a user"),
+  status: z.enum(["active", "won", "lost"]),
+  lostReason: z.string().optional(),
+  contactPerson: z.string().optional(),
+  contactEmail: z.string().optional(),
+  contactPhone: z.string().optional(),
+  nextActionDate: z.string().optional(),
+  nextActionDescription: z.string().optional(),
+});
+
+// Deal type based on the schema and MongoDB structure
 export interface Deal {
-  id: string;
+  _id: string;
   title: string;
   value: number;
   customerId: string;
-  status: 'lead' | 'opportunity' | 'proposal' | 'negotiation' | 'closed-won' | 'closed-lost';
-  stage: 'qualification' | 'meeting' | 'proposal' | 'negotiation' | 'closing';
+  stageId: string;
   probability: number;
   expectedCloseDate: string;
-  actualCloseDate?: string;
-  winReason?: string;
-  lossReason?: string;
-  notes: string;
+  notes?: string;
   assignedTo: string;
+  status: 'active' | 'won' | 'lost';
+  lostReason?: string;
+  lastContactDate?: string;
+  nextActionDate?: string;
+  nextActionDescription?: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
   createdAt: string;
   updatedAt: string;
+  
+  // Populated fields
+  customer?: any;
+  stage?: any;
+  assignedUser?: any;
 }
 
 export interface Activity {
@@ -73,7 +102,7 @@ export interface Lead {
   source: string;
   status: 'new' | 'contacted' | 'qualified' | 'lost';
   score: 'hot' | 'warm' | 'cold';
-  assignedTo?: string;
+  assignedTo?: string | { id: string; firstName: string; lastName: string };
   notes: string;
   createdAt: string;
   updatedAt: string;
@@ -130,17 +159,6 @@ export interface ContactFilters {
   limit?: number; // Added for pagination
 }
 
-export const dealSchema = z.object({
-  title: z.string().min(2, "Deal title is required"),
-  value: z.number().min(0, "Deal value must be positive"),
-  customerId: z.string().min(1, "Customer is required"),
-  stage: z.enum(['qualification', 'meeting', 'proposal', 'negotiation', 'closing']),
-  probability: z.number().min(0).max(100),
-  expectedCloseDate: z.string(),
-  notes: z.string().optional(),
-  assignedTo: z.string().min(1, "Sales representative is required"),
-});
-
 export const leadSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().min(2, "Last name is required"),
@@ -150,7 +168,7 @@ export const leadSchema = z.object({
   source: z.string().min(1, "Lead source is required"),
   status: z.enum(['new', 'contacted', 'qualified', 'lost']),
   score: z.enum(['hot', 'warm', 'cold']),
-  assignedTo: z.string().optional(),
+  assignedTo: z.any().optional(),
   notes: z.string().optional(),
 });
 
@@ -165,6 +183,27 @@ export interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface MasterData {
+  _id: string;
+  id: string;
+  category: string;
+  name: string;
+  value: string;
+  displayOrder?: number;
+  isActive: boolean;
+  
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const masterDataSchema = z.object({
+  category: z.string().min(1, "Category is required"),
+  name: z.string().min(1, "Name is required"),
+  value: z.string().min(1, "Value is required"),
+  displayOrder: z.number().optional(),
+  isActive: z.boolean().default(true),
+});
 
 export interface SystemSettings {
   currency: string;
@@ -181,8 +220,6 @@ export interface SystemSettings {
   salesSettings: {
     defaultSalesTax: number;
     fiscalYearStart: string;
-    dealStages: string[];
-    leadSources: string[];
   };
   emailSettings: {
     smtpServer?: string;
@@ -223,8 +260,6 @@ export const systemSettingsSchema = z.object({
   salesSettings: z.object({
     defaultSalesTax: z.number().min(0).max(100),
     fiscalYearStart: z.string(),
-    dealStages: z.array(z.string()),
-    leadSources: z.array(z.string()),
   }),
   emailSettings: z.object({
     smtpServer: z.string().optional(),

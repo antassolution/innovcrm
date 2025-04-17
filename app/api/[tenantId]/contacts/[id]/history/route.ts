@@ -19,13 +19,13 @@ export async function GET(req: Request, { params }: { params: { tenantId: string
 
 // POST: Add a new contact activity
 export async function POST(req: Request, { params }: { params: { tenantId: string; id: string } }) {
-  const { id: contactId } = params;
   const body = await req.json();
 
   await dbConnect();
 
   try {
-    const newActivity = await ContactActivityModel.create({ ...body, contactId });
+  const { id: contactId } = params;
+  const newActivity = await ContactActivityModel.create({ ...body, contactId , tenantId: params.tenantId });
     return NextResponse.json(newActivity, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create contact activity' }, { status: 500 });

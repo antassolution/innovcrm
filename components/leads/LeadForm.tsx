@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Lead, leadSchema } from "@/types";
+import { Lead, leadSchema, MasterData } from "@/types";
 import { leadService } from "@/services/leadService";
+import { masterDataService } from "@/services/masterDataService";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -34,7 +35,7 @@ interface LeadFormProps {
   onSuccess: () => void;
 }
 
-// Fallback sources in case settings fail to load
+// Fallback sources in case master data fails to load
 const fallbackLeadSources = [
   "Website",
   "Referral",
@@ -47,20 +48,37 @@ const fallbackLeadSources = [
 
 // Fallback sales reps in case users fail to load
 
-
 export function LeadForm({ lead, onSuccess }: LeadFormProps) {
   const [loading, setLoading] = useState(false);
+  const [leadSources, setLeadSources] = useState<MasterData[]>([]);
+  const [loadingLeadSources, setLoadingLeadSources] = useState(true);
   const { toast } = useToast();
   const { settings, loading: loadingSettings } = useSettings();
   const { users, loading: loadingUsers } = useUsers();
-
-  // Get lead sources from settings or use fallback
-  const leadSources = settings?.salesSettings?.leadSources || fallbackLeadSources;
   
   // Filter users to only include sales reps and management
   const salesUsers = users?.filter(user => 
     user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
   ) || [];
+
+  // Fetch lead sources from master data
+  useEffect(() => {
+    const fetchLeadSources = async () => {
+      try {
+        setLoadingLeadSources(true);
+        const masterData = await masterDataService.getMasterDataByCategory('lead-sources');
+        if (masterData && masterData.length > 0) {
+          setLeadSources(masterData);
+        } 
+      } catch (error) {
+        console.error("Error fetching lead sources:", error);
+      } finally {
+        setLoadingLeadSources(false);
+      }
+    };
+
+    fetchLeadSources();
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(leadSchema),
@@ -74,20 +92,30 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
       status: "new",
       score: "warm",
       notes: "",
+      assignedTo: undefined,
     },
   });
 
   const onSubmit = async (values: any) => {
     try {
       setLoading(true);
+      
+      // Process form values before submission
+      const processedValues = {...values};
+      
+      // Convert assignedTo object to just the ID for API
+      if (processedValues.assignedTo && typeof processedValues.assignedTo === 'object') {
+        processedValues.assignedTo = processedValues.assignedTo.id;
+      }
+      
       if (lead) {
-        await leadService.updateLead(lead._id, values);
+        await leadService.updateLead(lead._id, processedValues);
         toast({
           title: "Lead Updated",
           description: "The lead has been updated successfully.",
         });
       } else {
-        await leadService.createLead(values);
+        await leadService.createLead(processedValues);
         toast({
           title: "Lead Created",
           description: "The new lead has been created successfully.",
@@ -206,13 +234,13 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder={loadingSettings ? "Loading..." : "Select lead source"} />
+                              <SelectValue placeholder={loadingLeadSources ? "Loading..." : "Select lead source"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                             {leadSources.map((source) => (
-                              <SelectItem key={source} value={source}>
-                                {source}
+                              <SelectItem key={source.id} value={source.id}>
+                                {source.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -257,13 +285,42 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
                 <FormField
                   control={form.control}
                   name="assignedTo"
-                  render={({ field }) => (
+                  render={({ field }) => {
+                    // Calculate the correct value for the select component
+                    const selectValue = typeof field.value === 'string' 
+                      ? field.value 
+                      : field.value?.id || "";
+                      
+                    return (
                     <FormItem>
                       <FormLabel>Assign To</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select 
+                        onValueChange={(value) => {
+                          const selectedUser = salesUsers.find(user => user._id === value);
+                          if (selectedUser) {
+                            field.onChange({
+                              id: selectedUser._id,
+                              firstName: selectedUser.firstName,
+                              lastName: selectedUser.lastName
+                            });
+                          } else {
+                            field.onChange(undefined);
+                          }
+                        }} 
+                        value={selectValue}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder={loadingUsers ? "Loading..." : "Select sales representative"} />
+                            <SelectValue placeholder="Select sales representative">
+                              {field.value 
+                                ? (typeof field.value === 'string'
+                                    ? salesUsers.find(u => u._id === field.value)
+                                      ? `${salesUsers.find(u => u._id === field.value)?.firstName || ''} ${salesUsers.find(u => u._id === field.value)?.lastName || ''}`
+                                      : field.value
+                                    : `${field.value.firstName} ${field.value.lastName}`)
+                                : ""
+                              }
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -278,7 +335,7 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
                       </Select>
                       <FormMessage />
                     </FormItem>
-                  )}
+                  )}}
                 />
 
                 <FormField
