@@ -33,8 +33,9 @@ interface UserFormProps {
 
 const roles = [
   { value: 'admin', label: 'Administrator' },
-  { value: 'manager', label: 'Manager' },
-  { value: 'rep', label: 'Sales Representative' },
+  { value: 'sales-mgr', label: 'Sales Manager' },
+  { value: 'sales-rep', label: 'Sales Representative' },
+  { value: 'user', label: 'Standard User' },
 ];
 
 export function UserForm({ user, onSuccess }: UserFormProps) {
@@ -44,9 +45,10 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
   const form = useForm({
     resolver: zodResolver(userSchema),
     defaultValues: user || {
-      name: "",
+      firstName: "",
+      lastName: "",
       email: "",
-      role: "rep",
+      role: "sales-rep",
       status: "active",
     },
   });
@@ -55,7 +57,7 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
     try {
       setLoading(true);
       if (user) {
-        await userService.updateUser(user.id, values);
+        await userService.updateUser(user._id, values);
         toast({
           title: "Success",
           description: "User updated successfully.",
@@ -87,19 +89,35 @@ export function UserForm({ user, onSuccess }: UserFormProps) {
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4">User Information</h2>
               <div className="grid gap-6">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>First Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="John" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Last Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Doe" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <FormField
                   control={form.control}

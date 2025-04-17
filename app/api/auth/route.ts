@@ -19,7 +19,10 @@ export async function POST(req: Request) {
 
         const existingUser = await User.findOne({ email: requestBody.email });
         if (existingUser) {
-            throw new Error('Email already exists');
+            return NextResponse.json(
+                { error: 'A user with this email already exists' },
+                { status: 409 }
+            );
         }
 
         try {
@@ -33,8 +36,15 @@ export async function POST(req: Request) {
             try {
                 // Create user
                 const hashedPassword = await bcrypt.hash(requestBody.password, 10);
+                
+                // Split the name into firstName and lastName
+                const nameParts = requestBody.name.split(' ');
+                const firstName = nameParts[0] || '';
+                const lastName = nameParts.slice(1).join(' ') || '';
+                
                 const userData = {
-                    name: requestBody.name,
+                    firstName: firstName,
+                    lastName: lastName,
                     email: requestBody.email,
                     password: hashedPassword,
                     tenantId: savedTenant._id,

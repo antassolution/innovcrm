@@ -50,7 +50,10 @@ export function ContactList({
     }
   };
 
-  const toggleContact = (id: string) => {
+  const toggleContact = (id: string, e: React.MouseEvent) => {
+    // Stop propagation to prevent the row click from interfering
+    e.stopPropagation();
+
     if (selectedContacts.includes(id)) {
       onSelectionChange(selectedContacts.filter(cid => cid !== id));
     } else {
@@ -93,7 +96,7 @@ export function ContactList({
         <TableRow>
           <TableHead className="w-[50px]">
             <Checkbox
-              checked={selectedContacts.length === contacts.length}
+              checked={selectedContacts.length === contacts.length && contacts.length > 0}
               onCheckedChange={toggleAll}
             />
           </TableHead>
@@ -114,12 +117,23 @@ export function ContactList({
       </TableHeader>
       <TableBody>
         {contacts.map((contact) => (
-          <TableRow key={contact.id}>
-            <TableCell>
-              <Checkbox
-                checked={selectedContacts.includes(contact.id)}
-                onCheckedChange={() => toggleContact(contact.id)}
-              />
+          <TableRow 
+            key={contact._id} 
+            data-state={selectedContacts.includes(contact._id) ? "selected" : undefined}
+          >
+            <TableCell className="p-0 pl-4">
+              <div onClick={(e) => e.stopPropagation()}>
+                <Checkbox
+                  checked={selectedContacts.includes(contact._id)}
+                  onCheckedChange={() => {
+                    if (selectedContacts.includes(contact._id)) {
+                      onSelectionChange(selectedContacts.filter(cid => cid !== contact._id));
+                    } else {
+                      onSelectionChange([...selectedContacts, contact._id]);
+                    }
+                  }}
+                />
+              </div>
             </TableCell>
             <TableCell className="font-medium">{contact.firstName} {contact.lastName}</TableCell>
             <TableCell>{contact.companyId}</TableCell>

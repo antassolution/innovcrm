@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lead } from "@/types";
+import { Lead, PaginatedResult } from "@/types";
 import {
   Table,
   TableBody,
@@ -17,33 +17,44 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { leadService } from "@/services/leadService";
 import { useToast } from "@/hooks/use-toast";
-import { salesReps } from "./LeadForm";
 import { Checkbox } from "@/components/ui/checkbox";
 import { LeadAssignDialog } from "./LeadAssignDialog";
+import { Pagination } from "@/components/ui/pagination";
+import { useUsers } from "@/hooks/useUsers";
 
 interface LeadListProps {
-  leads: Lead[];
+  leads: PaginatedResult<Lead>;
   loading: boolean;
   onRefresh: () => void;
+  onPageChange: (page: number) => void;
 }
 
 const statusColors = {
   new: "default",
-  contacted: "warning",
-  qualified: "success",
+  contacted: "secondary",
+  qualified: "outline",
   lost: "destructive",
 } as const;
 
 const scoreColors = {
   hot: "destructive",
-  warm: "warning",
+  warm: "outline",
   cold: "secondary",
 } as const;
 
-export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
+export function LeadList({ leads, loading, onRefresh, onPageChange }: LeadListProps) {
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
   const { toast } = useToast();
+
+   const { users, loading: loadingUsers } = useUsers();
+  
+    
+    // Filter users to only include sales reps and management
+    const salesUsers = users?.filter(user => 
+      user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
+    ) || [];
+  
 
   const handleConvert = async (id: string) => {
     try {
@@ -63,10 +74,10 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
   };
 
   const toggleAll = () => {
-    if (selectedLeads.length === leads.length) {
+    if (selectedLeads.length === leads.data.length) {
       setSelectedLeads([]);
     } else {
-      setSelectedLeads(leads.map(lead => lead.id));
+      setSelectedLeads(leads.data.map(lead => lead._id));
     }
   };
 
@@ -86,7 +97,7 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
     );
   }
 
-  if (leads.length === 0) {
+  if (leads.data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">No leads found</div>
@@ -118,7 +129,7 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
           <TableRow>
             <TableHead className="w-[50px]">
               <Checkbox
-                checked={selectedLeads.length === leads.length}
+                checked={selectedLeads.length === leads.data.length}
                 onCheckedChange={toggleAll}
               />
             </TableHead>
@@ -132,12 +143,12 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.map((lead) => (
-            <TableRow key={lead.id}>
+          {leads.data.map((lead) => (
+            <TableRow key={lead._id}>
               <TableCell>
                 <Checkbox
-                  checked={selectedLeads.includes(lead.id)}
-                  onCheckedChange={() => toggleLead(lead.id)}
+                  checked={selectedLeads.includes(lead._id)}
+                  onCheckedChange={() => toggleLead(lead._id)}
                 />
               </TableCell>
               <TableCell>
@@ -155,14 +166,14 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
                 </Badge>
               </TableCell>
               <TableCell>
-                {lead.assignedTo ? salesReps?.find(rep => rep.id === lead.assignedTo)?.name : "-"}
+                {lead.assignedTo ? users?.find(rep => rep._id === lead.assignedTo)?.firstName : "-"}
               </TableCell>
               <TableCell>
                 {format(new Date(lead.createdAt), "MMM d, yyyy")}
               </TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
-                  <Link href={`/leads/${lead.id}`}>
+                  <Link href={`/leads/${lead._id}`}>
                     <Button variant="ghost" size="icon" title="View Details">
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -171,7 +182,7 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
                     variant="ghost"
                     size="icon"
                     title="Convert to Opportunity"
-                    onClick={() => handleConvert(lead.id)}
+                    onClick={() => handleConvert(lead._id)}
                   >
                     <ArrowUpRight className="h-4 w-4" />
                   </Button>
@@ -181,6 +192,12 @@ export function LeadList({ leads, loading, onRefresh }: LeadListProps) {
           ))}
         </TableBody>
       </Table>
+
+      <Pagination
+        currentPage={leads?.pagination?.page}
+        totalPages={leads?.pagination?.totalPages}
+        onPageChange={onPageChange}
+      />
 
       <LeadAssignDialog
         open={showAssignDialog}

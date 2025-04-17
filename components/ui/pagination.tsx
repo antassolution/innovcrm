@@ -128,7 +128,7 @@ const PaginationLink = ({
         variant: isActive ? 'default' : 'outline',
         size,
       }),
-      'rounded-md px-3 py-1 text-sm font-medium',
+      'rounded-md px-3 py-1 text-sm font-medium cursor-pointer',
       className
     )}
     {...props}

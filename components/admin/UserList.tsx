@@ -23,11 +23,14 @@ interface UserListProps {
   onRefresh: () => void;
 }
 
-const roleColors = {
+const roleColors: Record<string, "default" | "destructive" | "secondary" | "outline"> = {
   'admin': 'destructive',
-  'manager': 'warning',
+  'manager': 'secondary',
   'rep': 'default',
-} as const;
+  'sales-mgr': 'secondary',
+  'sales-rep': 'default',
+  'user': 'default',
+};
 
 export function UserList({ users, loading, onRefresh }: UserListProps) {
   const { toast } = useToast();
@@ -79,8 +82,8 @@ export function UserList({ users, loading, onRefresh }: UserListProps) {
       </TableHeader>
       <TableBody>
         {users.map((user) => (
-          <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.name}</TableCell>
+          <TableRow key={user._id}>
+            <TableCell className="font-medium">{user.firstName} {user.lastName}</TableCell>
             <TableCell>{user.email}</TableCell>
             <TableCell>
               <Badge variant={roleColors[user.role]}>
@@ -88,7 +91,7 @@ export function UserList({ users, loading, onRefresh }: UserListProps) {
               </Badge>
             </TableCell>
             <TableCell>
-              <Badge variant={user.status === 'active' ? 'success' : 'secondary'}>
+              <Badge variant={user.status === 'active' ? 'default' : 'secondary'}>
                 {user.status}
               </Badge>
             </TableCell>
@@ -97,7 +100,7 @@ export function UserList({ users, loading, onRefresh }: UserListProps) {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Link href={`/admin/users/${user.id}`}>
+                <Link href={`/admin/users/${user._id}`}>
                   <Button variant="ghost" size="icon" title="View Details">
                     <Eye className="h-4 w-4" />
                   </Button>
@@ -106,7 +109,7 @@ export function UserList({ users, loading, onRefresh }: UserListProps) {
                   variant="ghost"
                   size="icon"
                   title={user.status === 'active' ? 'Disable User' : 'Enable User'}
-                  onClick={() => handleToggleStatus(user.id)}
+                  onClick={() => handleToggleStatus(user._id)}
                 >
                   <Power className={`h-4 w-4 ${user.status === 'active' ? 'text-red-600' : 'text-green-600'}`} />
                 </Button>

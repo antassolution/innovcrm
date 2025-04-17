@@ -26,13 +26,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Info } from "lucide-react";
+import { useSettings } from "@/hooks/useSettings";
+import { useUsers } from "@/hooks/useUsers";
 
 interface LeadFormProps {
   lead?: Lead;
   onSuccess: () => void;
 }
 
-const leadSources = [
+// Fallback sources in case settings fail to load
+const fallbackLeadSources = [
   "Website",
   "Referral",
   "Social Media",
@@ -42,15 +45,22 @@ const leadSources = [
   "Other",
 ];
 
-export const salesReps = [
-  { id: "user1", name: "Alice Johnson" },
-  { id: "user2", name: "Bob Smith" },
-  { id: "user3", name: "Carol Williams" },
-] as const;
+// Fallback sales reps in case users fail to load
+
 
 export function LeadForm({ lead, onSuccess }: LeadFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { settings, loading: loadingSettings } = useSettings();
+  const { users, loading: loadingUsers } = useUsers();
+
+  // Get lead sources from settings or use fallback
+  const leadSources = settings?.salesSettings?.leadSources || fallbackLeadSources;
+  
+  // Filter users to only include sales reps and management
+  const salesUsers = users?.filter(user => 
+    user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
+  ) || [];
 
   const form = useForm({
     resolver: zodResolver(leadSchema),
@@ -71,7 +81,7 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
     try {
       setLoading(true);
       if (lead) {
-        await leadService.updateLead(lead.id, values);
+        await leadService.updateLead(lead._id, values);
         toast({
           title: "Lead Updated",
           description: "The lead has been updated successfully.",
@@ -196,7 +206,7 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select lead source" />
+                              <SelectValue placeholder={loadingSettings ? "Loading..." : "Select lead source"} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -253,15 +263,17 @@ export function LeadForm({ lead, onSuccess }: LeadFormProps) {
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select sales representative" />
+                            <SelectValue placeholder={loadingUsers ? "Loading..." : "Select sales representative"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {salesReps.map((rep) => (
-                            <SelectItem key={rep.id} value={rep.id}>
-                              {rep.name}
-                            </SelectItem>
-                          ))}
+                         {
+                            salesUsers.map((user) => (
+                              <SelectItem key={user._id} value={user._id}>
+                                {user.firstName} {user.lastName}
+                              </SelectItem>
+                            ))
+                        }
                         </SelectContent>
                       </Select>
                       <FormMessage />

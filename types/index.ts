@@ -63,6 +63,7 @@ export interface Contact {
 }
 
 export interface Lead {
+  _id:string;
   id: string;
   firstName: string;
   lastName: string;
@@ -154,10 +155,12 @@ export const leadSchema = z.object({
 });
 
 export interface User {
+  _id: string;
   id: string;
   email: string;
-  name: string;
-  role: 'admin' | 'manager' | 'rep';
+  firstName: string;
+  lastName: string;
+  role: 'admin' | 'sales-mgr' | 'sales-rep' | 'user';
   status: 'active' | 'disabled';
   createdAt: string;
   updatedAt: string;
@@ -167,6 +170,28 @@ export interface SystemSettings {
   currency: string;
   dateFormat: string;
   timeZone: string;
+  companyInfo: {
+    name: string;
+    logo?: string;
+    address?: string;
+    phone?: string;
+    website?: string;
+    email?: string;
+  };
+  salesSettings: {
+    defaultSalesTax: number;
+    fiscalYearStart: string;
+    dealStages: string[];
+    leadSources: string[];
+  };
+  emailSettings: {
+    smtpServer?: string;
+    smtpPort?: number;
+    smtpUsername?: string;
+    smtpPassword?: string;
+    fromEmail?: string;
+    emailSignature?: string;
+  };
   emailNotifications: {
     newLeads: boolean;
     dealUpdates: boolean;
@@ -177,8 +202,9 @@ export interface SystemSettings {
 
 export const userSchema = z.object({
   email: z.string().email("Invalid email address"),
-  name: z.string().min(2, "Name is required"),
-  role: z.enum(['admin', 'manager', 'rep']),
+  firstName: z.string().min(2, "First name is required"),
+  lastName: z.string().min(2, "Last name is required"),
+  role: z.enum(['admin', 'sales-mgr', 'sales-rep', 'user']),
   status: z.enum(['active', 'disabled']),
 });
 
@@ -186,6 +212,28 @@ export const systemSettingsSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
   dateFormat: z.string().min(1, "Date format is required"),
   timeZone: z.string().min(1, "Time zone is required"),
+  companyInfo: z.object({
+    name: z.string().min(1, "Company name is required"),
+    logo: z.string().optional(),
+    address: z.string().optional(),
+    phone: z.string().optional(),
+    website: z.string().url().optional(),
+    email: z.string().email().optional(),
+  }),
+  salesSettings: z.object({
+    defaultSalesTax: z.number().min(0).max(100),
+    fiscalYearStart: z.string(),
+    dealStages: z.array(z.string()),
+    leadSources: z.array(z.string()),
+  }),
+  emailSettings: z.object({
+    smtpServer: z.string().optional(),
+    smtpPort: z.number().optional(),
+    smtpUsername: z.string().optional(),
+    smtpPassword: z.string().optional(),
+    fromEmail: z.string().email().optional(),
+    emailSignature: z.string().optional(),
+  }),
   emailNotifications: z.object({
     newLeads: z.boolean(),
     dealUpdates: z.boolean(),

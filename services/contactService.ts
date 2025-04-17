@@ -2,8 +2,10 @@ import { Contact, ContactHistory, PaginatedResult } from '@/types';
 import httpClient from '@/lib/httpClient';
 
 export const contactService = {
-  getContacts: async (): Promise<PaginatedResult<Contact>> => {
-    const response = await httpClient.get('/api/contacts');
+  getContacts: async (page: number = 1, pageSize: number = 10): Promise<PaginatedResult<Contact>> => {
+    const response = await httpClient.get('/api/contacts', {
+      params: { page, pageSize },
+    });
     return response.data;
   },
 

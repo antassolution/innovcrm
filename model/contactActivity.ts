@@ -13,7 +13,7 @@ const ContactActivitySchema = new Schema<ContactActivity>({
   type: { type: String, enum: ['email', 'call', 'meeting', 'note'], required: true },
   title: { type: String, required: true },
   description: { type: String, required: true },
-  date: { type: Date, required: true },
+  date: { type: Date, required: true , index: true},
 });
 
 const ContactActivityModel = mongoose.models.ContactActivity || mongoose.model<ContactActivity>('ContactActivity', ContactActivitySchema);

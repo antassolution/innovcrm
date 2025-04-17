@@ -1,30 +1,25 @@
 import { SystemSettings } from '@/types';
-
-// Mock data for settings
-let settings: SystemSettings = {
-  currency: 'USD',
-  dateFormat: 'MM/DD/YYYY',
-  timeZone: 'America/New_York',
-  emailNotifications: {
-    newLeads: true,
-    dealUpdates: true,
-    taskReminders: true,
-    dailyDigest: false,
-  },
-};
+import  httpClient  from '@/lib/httpClient';
 
 export const settingsService = {
   getSettings: async (): Promise<SystemSettings> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return settings;
+    try {
+      // Authenticate and get tenant ID from context
+      const response = await httpClient.get('/api/settings');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch settings:', error);
+      throw error;
+    }
   },
 
   updateSettings: async (data: Partial<SystemSettings>): Promise<SystemSettings> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    settings = {
-      ...settings,
-      ...data,
-    };
-    return settings;
+    try {
+      const response = await httpClient.put('/api/settings', data);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      throw error;
+    }
   },
 };

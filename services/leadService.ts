@@ -1,73 +1,89 @@
-import { Lead } from '@/types';
-
-// Mock data for leads
-let leads: Lead[] = [
-  {
-    id: '1',
-    firstName: 'John',
-    lastName: 'Smith',
-    email: 'john.smith@example.com',
-    phone: '(555) 123-4567',
-    company: 'Tech Corp',
-    source: 'Website',
-    status: 'new',
-    score: 'hot',
-    assignedTo: 'user1',
-    notes: 'Interested in enterprise solution',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+import { Lead, PaginatedResult } from '@/types';
+import  httpClient from '@/lib/httpClient';
 
 export const leadService = {
-  getLeads: async (): Promise<Lead[]> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return leads;
+  getLeads: async (page: number = 1, pageSize: number = 10): Promise<PaginatedResult<Lead>> => {
+    try {
+      const response = await httpClient.get('/api/leads', {
+        params: { page, pageSize },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+      throw error;
+    }
   },
 
   getLeadById: async (id: string): Promise<Lead | undefined> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return leads.find(lead => lead.id === id);
+    try {
+      const response = await httpClient.get(`/api/leads/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching lead ${id}:`, error);
+      throw error;
+    }
   },
 
   createLead: async (data: Omit<Lead, 'id' | 'createdAt' | 'updatedAt'>): Promise<Lead> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const newLead: Lead = {
-      id: Math.random().toString(36).substr(2, 9),
-      ...data,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    leads.push(newLead);
-    return newLead;
+    try {
+      const response = await httpClient.post('/api/leads', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating lead:', error);
+      throw error;
+    }
   },
 
   updateLead: async (id: string, data: Partial<Lead>): Promise<Lead> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const index = leads.findIndex(lead => lead.id === id);
-    if (index === -1) throw new Error('Lead not found');
-    
-    leads[index] = {
-      ...leads[index],
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-    return leads[index];
+    try {
+      const response = await httpClient.put(`/api/leads/${id}`, data);
+      return response.data;
+    } catch (error) {
+      console.error(`Error updating lead ${id}:`, error);
+      throw error;
+    }
   },
 
   deleteLead: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    leads = leads.filter(lead => lead.id !== id);
+    try {
+      await httpClient.delete(`/api/leads/${id}`);
+    } catch (error) {
+      console.error(`Error deleting lead ${id}:`, error);
+      throw error;
+    }
   },
 
   convertToOpportunity: async (id: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    // In a real application, this would create a new opportunity
-    // and update the lead status
-    const lead = leads.find(l => l.id === id);
-    if (lead) {
-      lead.status = 'qualified';
-      lead.updatedAt = new Date().toISOString();
+    try {
+      // First, get the lead data
+      const lead = await leadService.getLeadById(id);
+      
+      if (!lead) {
+        throw new Error('Lead not found');
+      }
+      
+      // Update the lead status to qualified
+      await leadService.updateLead(id, { status: 'qualified' });
+      
+      // In a real application, this would also create a new opportunity
+      // based on the lead data and potentially connect to a deals API
+    } catch (error) {
+      console.error(`Error converting lead ${id} to opportunity:`, error);
+      throw error;
     }
   },
+  
+  assignLeads: async (leadIds: string[], assignedTo: string): Promise<void> => {
+    try {
+      // For multiple leads, we make parallel requests to update each one
+      const updatePromises = leadIds.map(id => 
+        leadService.updateLead(id, { assignedTo })
+      );
+      
+      await Promise.all(updatePromises);
+    } catch (error) {
+      console.error('Error assigning leads:', error);
+      throw error;
+    }
+  }
 };

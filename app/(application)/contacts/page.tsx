@@ -7,7 +7,8 @@ import { ContactList } from "@/components/contacts/ContactList";
 import { ContactToolbar } from "@/components/contacts/ContactToolbar";
 import { ContactBulkActions } from "@/components/contacts/ContactBulkActions";
 import { useToast } from "@/hooks/use-toast";
-import { Pagination, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext } from "@/components/ui/pagination";
+import { Pagination } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ContactsPage() {
   const [contacts, setContacts] = useState<PaginatedResult<Contact>>();
@@ -27,9 +28,12 @@ export default function ContactsPage() {
     loadContacts();
   }, []);
 
-  const loadContacts = async () => {
+  const loadContacts = async (page?: number) => {
+    setLoading(true);
     try {
-      const data = await contactService.getContacts();
+      // Use the provided page parameter or fall back to filters.page or 1
+      const currentPage = page !== undefined ? page : (filters.page || 1);
+      const data = await contactService.getContacts(currentPage, 10);
       setContacts(data);
     } catch (error) {
       console.error("Failed to load contacts:", error);
@@ -101,6 +105,11 @@ export default function ContactsPage() {
     }
   };
 
+  const handlePageChange = (page: number) => {
+    setFilters((prevFilters) => ({ ...prevFilters, page }));
+    loadContacts(page);
+  };
+
   const sortedContacts = [...(contacts?.data || [])].sort((a, b) => {
     const modifier = sortOrder === "asc" ? 1 : -1;
     switch (sortField) {
@@ -147,56 +156,47 @@ export default function ContactsPage() {
         )}
 
         <div className="rounded-lg border bg-card">
-          <ContactList
-            contacts={filteredContacts}
-            loading={loading}
-            sortField={sortField}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            selectedContacts={selectedContacts}
-            onSelectionChange={setSelectedContacts}
-          />
+          {loading ? (
+            <div className="p-4">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-4">
+                  <Skeleton className="h-8 w-48" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex items-center justify-between py-2">
+                    <div className="flex items-center space-x-4">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <Skeleton className="h-6 w-48" />
+                    </div>
+                    <Skeleton className="h-6 w-24" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <ContactList
+              contacts={filteredContacts}
+              loading={loading}
+              sortField={sortField}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              selectedContacts={selectedContacts}
+              onSelectionChange={setSelectedContacts}
+            />
+          )}
 
-          <div className="flex justify-center mt-4">
-            <Pagination
-              className="flex items-center space-x-2"
-              currentPage={contacts?.pagination.page || 1}
-              totalPages={contacts?.pagination.totalPages || 1}
-              onPageChange={(page) => {
-                setFilters({ ...filters, page });
-                loadContacts();
-              }}
-            >
-              <PaginationPrevious
-                onClick={() => {
-                  if (contacts?.pagination.page > 1) {
-                    setFilters({ ...filters, page: contacts.pagination.page - 1 });
-                    loadContacts();
-                  }
-                }}
+          <div className="flex justify-center my-4">
+            {loading ? (
+              <Skeleton className="h-10 w-72" />
+            ) : (
+              <Pagination
+                className="flex items-center space-x-2"
+                currentPage={contacts?.pagination.page || 1}
+                totalPages={contacts?.pagination.totalPages || 1}
+                onPageChange={handlePageChange}
               />
-              {Array.from({ length: contacts?.pagination.totalPages || 1 }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    isActive={page === contacts?.pagination.page}
-                    onClick={() => {
-                      setFilters({ ...filters, page });
-                      loadContacts();
-                    }}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationNext
-                onClick={() => {
-                  if (contacts?.pagination.page < (contacts?.pagination.totalPages || 1)) {
-                    setFilters({ ...filters, page: contacts.pagination.page + 1 });
-                    loadContacts();
-                  }
-                }}
-              />
-            </Pagination>
+            )}
           </div>
         </div>
       </div>

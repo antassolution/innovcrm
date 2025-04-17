@@ -48,43 +48,82 @@ if(!body?.companyId)
   return NextResponse.json(newContact, { status: 201 });
 }
 
-// POST: Generate sample contacts and history in batches
+
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function insertWithRetry(model: any, docs: any[], label: string) {
+  try {
+    return await model.insertMany(docs, { ordered: false }); // ✅ return result
+  } catch (err: any) {
+    if (err.code === 16500 || err.status === 429) {
+      const retryAfter = err.retryAfterMs || 3000;
+      console.warn(`Throttled (${label}). Retrying after ${retryAfter} ms`);
+      await delay(retryAfter);
+      return insertWithRetry(model, docs, label);
+    } else {
+      console.error(`Insert failed for ${label}:`, err);
+      throw err;
+    }
+  }
+}
+
+
+function chunkArray<T>(array: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
+    array.slice(i * size, i * size + size)
+  );
+}
+
 export async function PATCH(req: Request, { params }: { params: { tenantId: string } }) {
   await dbConnect();
 
-  try{
-    const batchSize = 1000;
+  try {
+    const batchSize = 10; // Contact insert per batch
     const totalContacts = 10000;
-    const totalHistoriesPerContact = 100;
+    const totalHistoriesPerContact = 10;
+    const historyChunkSize = 50; // Split history inserts
+    const delayBetweenChunks = 1500;
 
-    for (let batch = 1; batch < totalContacts / batchSize; batch++) {
-      // Generate a batch of contacts
-      const contacts = Array.from({ length: batchSize }, (_, i) => ({
-        firstName: `First ${batch * batchSize + i + 1}`,
-        lastName: `Last ${batch * batchSize + i + 1}`,
-        email: `contact-new2${batch * batchSize + i + 1}@example.com`,
-        phone: `123451${(batch * batchSize + i) % 10}`,
-      }));
+    for (let batchStart = 0; batchStart < totalContacts; batchStart += batchSize) {
+      // 1. Create contacts
+      const contacts = Array.from(
+        { length: Math.min(batchSize, totalContacts - batchStart) },
+        (_, i) => ({
+          firstName: `First ${batchStart + i + 1}`,
+          lastName: `Last ${batchStart + i + 1}`,
+          email: `contact-${batchStart + i + 1}@example.com`,
+          phone: `123451${(batchStart + i) % 10}`,
+        })
+      );
 
-      // Insert the batch of contacts into the database
-      const createdContacts = await Contact.insertMany(contacts);
+      const createdContacts = await insertWithRetry(Contact, contacts, 'contacts');
 
-      // Generate history records for the batch of contacts
-      const historyRecords = createdContacts.flatMap((contact) => {
-        return Array.from({ length: totalHistoriesPerContact }, (_, j) => ({
+      // 2. Short delay before activities
+      await delay(1000);
+
+      // 3. Create activity records
+      const historyRecords = createdContacts.flatMap((contact:any) =>
+        Array.from({ length: totalHistoriesPerContact }, (_, j) => ({
           contactId: contact._id,
-          action: `Action ${j + 1}`,
-          timestamp: new Date(),
-        }));
-      });
+          type: 'call',
+          title: `Action ${j + 1}`,
+          description: `description ${j + 1}`,
+          date: new Date(),
+        }))
+      );
 
-      // Use the correct model for inserting history records
-      await ContactActivityModel.insertMany(historyRecords);
+      const chunks = chunkArray(historyRecords, historyChunkSize);
+
+      for (const chunk of chunks) {
+        await insertWithRetry(ContactActivityModel, chunk, 'contact activities');
+        await delay(delayBetweenChunks);
+      }
+
+      console.log(`Batch ${batchStart + batchSize} / ${totalContacts} inserted.`);
     }
-  }
-  catch (error) {
+  } catch (error) {
     console.error('Error generating sample data:', error);
-    return NextResponse.json({ error: 'Failed to generate sample data' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 
   return NextResponse.json({ message: 'Sample data generated successfully in batches' }, { status: 201 });

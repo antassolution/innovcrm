@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { leadService } from "@/services/leadService";
-import { salesReps } from "./LeadForm";
+import { useUsers } from "@/hooks/useUsers";
 
 interface LeadAssignDialogProps {
   open: boolean;
@@ -37,6 +37,14 @@ export function LeadAssignDialog({
   const [assignedTo, setAssignedTo] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+    
+    const { users, loading: loadingUsers } = useUsers();
+  
+    // Get lead sources from settings or use fallback
+    const salesUsers = users?.filter(user => 
+      user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
+    ) || [];    
 
   const handleSubmit = async () => {
     try {
@@ -81,9 +89,9 @@ export function LeadAssignDialog({
               <SelectValue placeholder="Select sales representative" />
             </SelectTrigger>
             <SelectContent>
-              {salesReps.map((rep) => (
-                <SelectItem key={rep.id} value={rep.id}>
-                  {rep.name}
+              {salesUsers.map((rep) => (
+                <SelectItem key={rep._id} value={rep._id}>
+                  {rep.firstName} {rep.lastName} ({rep.email})
                 </SelectItem>
               ))}
             </SelectContent>
