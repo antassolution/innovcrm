@@ -41,7 +41,7 @@ export function DealForecast({ deals }: DealForecastProps) {
   }
 
   const chartData = forecast.byStage.map((stage) => ({
-    name: stage.stage.charAt(0).toUpperCase() + stage.stage.slice(1),
+    name: stage?.stage?.charAt(0).toUpperCase() + stage?.stage?.slice(1),
     value: stage.value,
     count: stage.count,
   }));

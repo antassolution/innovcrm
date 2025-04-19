@@ -19,7 +19,7 @@ export default function DealsPage() {
   const loadDeals = async () => {
     try {
       const data = await dealService.getDeals();
-      setDeals(data);
+      setDeals(data?.data);
     } catch (error) {
       console.error("Failed to load deals:", error);
       toast({

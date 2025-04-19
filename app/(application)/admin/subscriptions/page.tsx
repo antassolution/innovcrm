@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Check, Zap } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createCheckoutSession, getSubscriptionStatus } from '@/services/subscriptionService';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -39,29 +40,40 @@ const features = {
 
 export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(false);
+  const [isProPlan, setIsProPlan] = useState(false);
+
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        
+        const status = await getSubscriptionStatus();
+        setIsProPlan(status === 'paid');
+      } catch (error) {
+        console.error('Error fetching subscription status:', error);
+      }
+    };
+
+    fetchSubscriptionStatus();
+  }, []);
 
   const handleCheckout = async () => {
     setLoading(true);
     const stripe = await stripePromise;
 
-    const response = await fetch("/api/create-checkout-session", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ plan: "pro" }),
-    });
+    try {
+      const session = await createCheckoutSession('pro');
 
-    const session = await response.json();
-
-    if (stripe) {
-      const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
-      if (error) {
-        console.error(error);
+      if (stripe) {
+        const { error } = await stripe.redirectToCheckout({ sessionId: session.id });
+        if (error) {
+          console.error(error);
+        }
       }
+    } catch (error) {
+      console.error('Error during checkout:', error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -81,9 +93,11 @@ export default function SubscriptionsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               Free Plan
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                Current Plan
-              </span>
+              {!isProPlan && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  Current Plan
+                </span>
+              )}
             </CardTitle>
             <CardDescription>Perfect for getting started</CardDescription>
           </CardHeader>
@@ -101,11 +115,7 @@ export default function SubscriptionsPage() {
               ))}
             </ul>
           </CardContent>
-          <CardFooter>
-            <Button variant="outline" className="w-full" disabled>
-              Current Plan
-            </Button>
-          </CardFooter>
+          
         </Card>
 
         {/* Pro Plan */}
@@ -116,15 +126,17 @@ export default function SubscriptionsPage() {
                 Pro Plan
                 <Zap className="h-5 w-5 text-primary" />
               </CardTitle>
-              <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
-                Most Popular
-              </span>
+              {isProPlan && (
+                <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                  Current Plan
+                </span>
+              )}
             </div>
             <CardDescription>For growing businesses</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <span className="text-3xl font-bold">$29</span>
+              <span className="text-3xl font-bold">$3</span>
               <span className="text-muted-foreground">/month</span>
             </div>
             <ul className="space-y-2">
@@ -137,8 +149,8 @@ export default function SubscriptionsPage() {
             </ul>
           </CardContent>
           <CardFooter>
-            <Button className="w-full" onClick={handleCheckout} disabled={loading}>
-              {loading ? "Processing..." : "Upgrade to Pro"}
+            <Button className="w-full" onClick={handleCheckout} disabled={loading || isProPlan}>
+              {loading ? "Processing..." : isProPlan ? "Current Plan" : "Upgrade to Pro"}
             </Button>
           </CardFooter>
         </Card>

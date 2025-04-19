@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -30,11 +30,12 @@ export default function AdminLayout({
                 <TabsTrigger value="/admin/subscriptions">Subscriptions</TabsTrigger>
               </Link>
             </TabsList>
+            <div className="container mx-auto px-4 py-8">
+                {children}
+              </div>
+           
           </Tabs>
         </div>
-      </div>
-      <div className="container mx-auto px-4 py-8">
-        {children}
       </div>
     </div>
   );

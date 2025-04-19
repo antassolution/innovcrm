@@ -13,11 +13,15 @@ export async function middleware(request: NextRequest) {
     const publicPaths = ['/', '/login', '/register']
 
     const isPublicPath = publicPaths.includes(pathname) || pathname.startsWith('/api/auth') || pathname.startsWith('/_next') || pathname === '/favicon.ico'
-
+    console.log('isPublicPath', isPublicPath)
+    console.log('pathname', pathname)
+    console.log('authToken', authToken)
+    console.log('(!isPublicPath && !authToken)', (!isPublicPath && !authToken))
     if (!isPublicPath && !authToken) {
-     
+        console.log('Redirecting to login')
         return NextResponse.redirect(new URL('/login', request.url))
     }
+
     if (!isPublicPath && pathname.startsWith('/api/') && authToken) {
 
         try {

@@ -43,6 +43,7 @@ export interface Deal {
   status: 'active' | 'won' | 'lost';
   lostReason?: string;
   lastContactDate?: string;
+  actualCloseDate?: string;
   nextActionDate?: string;
   nextActionDescription?: string;
   contactPerson?: string;

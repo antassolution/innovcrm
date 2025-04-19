@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { validateSession } from '@/services/subscriptionService';
 
 export default function SuccessPage() {
   const searchParams = useSearchParams();
@@ -10,10 +11,9 @@ export default function SuccessPage() {
 
   useEffect(() => {
     if (session_id) {
-      const validateSession = async () => {
+      const validateSessionHandler = async () => {
         try {
-          const response = await fetch(`/api/validate-session?session_id=${session_id}`);
-          const data = await response.json();
+          const data = await validateSession(session_id);
 
           if (data.success) {
             setSuccess(true);
@@ -28,21 +28,33 @@ export default function SuccessPage() {
         }
       };
 
-      validateSession();
+      validateSessionHandler();
     }
   }, [session_id]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-lg font-medium">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <div>
-      {success ? (
-        <h1>Payment Successful!</h1>
-      ) : (
-        <h1>Payment Validation Failed</h1>
-      )}
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-center">
+        {success ? (
+          <div>
+            <h1 className="text-3xl font-bold text-green-600">Payment Successful!</h1>
+            <p className="mt-4 text-lg text-gray-700">Thank you for your payment. Your transaction was completed successfully.</p>
+          </div>
+        ) : (
+          <div>
+            <h1 className="text-3xl font-bold text-red-600">Payment Validation Failed</h1>
+            <p className="mt-4 text-lg text-gray-700">We could not validate your payment. Please contact support for assistance.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

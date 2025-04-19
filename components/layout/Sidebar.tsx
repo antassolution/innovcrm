@@ -18,23 +18,24 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
 
 const navigation = [
   {
     name: "Contact Management",
     icon: Users,
     items: [
-      { name: "All Contacts", href: "/contacts" },
-      { name: "Companies", href: "/contacts/companies" },
-      { name: "Add New Contact", href: "/contacts/new" },
+      { name: "All Contacts", href: "/contacts", icon: Users },
+      // { name: "Companies", href: "/contacts/companies", icon: Building2 },
+      { name: "Add New Contact", href: "/contacts/new", icon: UserPlus },
     ],
   },
   {
     name: "Lead Management",
     icon: Target,
     items: [
-      { name: "All Leads", href: "/leads" },
-      { name: "Add New Lead", href: "/leads/new" },
+      { name: "All Leads", href: "/leads", icon: Target },
+      { name: "Add New Lead", href: "/leads/new", icon: UserPlus },
     ],
   },
   {
@@ -51,8 +52,8 @@ const navigation = [
     name: "Administration",
     icon: Settings,
     items: [
-      { name: "Users", href: "/admin/users" },
-      { name: "Settings", href: "/admin/settings" },
+      { name: "Users", href: "/admin/users", icon: Users },
+      { name: "Settings", href: "/admin/settings", icon: Settings },
       { name: "Subscriptions", href: "/admin/subscriptions", icon: CreditCard },
     ],
   },
@@ -60,6 +61,7 @@ const navigation = [
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const pathname = usePathname();
 
   return (
     <div 
@@ -102,7 +104,7 @@ export function Sidebar() {
                       href={item.href}
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary hover:bg-muted",
-                        item.href === "/contacts" && "bg-primary/10 text-primary",
+                        pathname === item.href && "bg-primary/10 text-primary",
                         isCollapsed && "justify-center"
                       )}
                       title={isCollapsed ? item.name : undefined}

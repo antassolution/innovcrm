@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+
 export interface MasterData {
     id: string;
     category: string;
@@ -54,6 +55,10 @@ const masterDataSchema = new Schema<MasterData & Document>(
 
 // Compound index for faster querying
 masterDataSchema.index({ category: 1, isActive: 1 });
+
+masterDataSchema.index({ createdAt: 1 });
+
+
 
 // Create or retrieve the model
 export const MasterDataModel = mongoose.models.MasterData || 

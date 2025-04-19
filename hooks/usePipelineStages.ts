@@ -3,6 +3,7 @@ import { masterDataService } from '@/services/masterDataService';
 import { MasterData } from '@/types';
 
 interface PipelineStage {
+  id: string;
   _id: string;
   name: string;
   order: number;
@@ -33,7 +34,7 @@ export function usePipelineStages() {
     }
   }, []);
 
-  const createPipelineStage = useCallback(async (pipelineStage: Omit<MasterData, '_id'>) => {
+  const createPipelineStage = useCallback(async (pipelineStage: Omit<MasterData, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
       setIsLoading(true);
       setError(null);

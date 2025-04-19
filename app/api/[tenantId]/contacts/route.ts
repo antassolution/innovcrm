@@ -12,7 +12,7 @@ export async function GET(req: Request,  { params }: { params: { tenantId: strin
   await dbConnect();
 
    // Build the query object
-   const query: any = {};
+   const query: any = {tenantId: params.tenantId};
    if (email) {
      query.email = email;
    }

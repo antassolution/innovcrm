@@ -130,7 +130,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-bold">Pro</h3>
               <p className="text-primary-foreground/80 mt-2">For growing businesses</p>
               <div className="mt-6 mb-8">
-                <span className="text-4xl font-bold">$29</span>
+                <span className="text-4xl font-bold">$3</span>
                 <span className="text-primary-foreground/80">/month</span>
               </div>
               <ul className="space-y-4 mb-8">

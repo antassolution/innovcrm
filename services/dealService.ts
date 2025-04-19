@@ -1,4 +1,4 @@
-import { Deal } from '@/types';
+import { Deal, PaginatedResult } from '@/types';
 import httpClient from '@/lib/httpClient';
 
 
@@ -9,7 +9,8 @@ export const dealService = {
   /**
    * Fetch all deals with optional filtering
    */
-  async getDeals(filters: Record<string, any> = {}, page = 1, limit = 10): Promise<{data: Deal[], pagination: any}> {
+  async getDeals(filters: Record<string, any> = {}, page = 1, limit = 10): Promise<PaginatedResult<Deal>> {
+    console.log('Fetching deals with filters:', filters, 'Page:', page, 'Limit:', limit);
     const queryParams = new URLSearchParams({
       ...filters,
       page: page.toString(),
@@ -73,5 +74,18 @@ export const dealService = {
   async getDealsByStatus(status: 'active' | 'won' | 'lost'): Promise<Deal[]> {
     const response = await httpClient.get(`/api/deals?status=${status}`);
     return response.data.data;
+  },
+
+  /**
+   * Get forecast data for deals
+   */
+  async getForecast() {
+    try {
+      const response = await httpClient.get('/api/deals/forecast');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching forecast data:', error);
+      throw error;
+    }
   }
 };

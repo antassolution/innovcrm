@@ -35,4 +35,8 @@ const LeadSchema: Schema = new Schema<ILead>(
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
+LeadSchema.index({ createdAt: 1 });
+
+
+
 export default mongoose.models.Lead || mongoose.model<ILead>('Lead', LeadSchema);

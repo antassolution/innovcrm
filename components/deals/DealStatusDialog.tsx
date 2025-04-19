@@ -20,7 +20,7 @@ import { Loader2 } from "lucide-react";
 interface DealStatusDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess: () => void;
+  onSuccess: (page:number, limit:number) => void;
   dealId: string;
   action: "won" | "lost";
 }
@@ -42,7 +42,7 @@ export function DealStatusDialog({
     try {
       setLoading(true);
       await dealService.updateDeal(dealId, {
-        status: action === "won" ? "closed-won" : "closed-lost",
+        status: action === "won" ? "won" : "lost",
         actualCloseDate: new Date().toISOString(),
         ...(action === "won" 
           ? { winReason: reason, actualValue: Number(actualValue) }
@@ -54,7 +54,7 @@ export function DealStatusDialog({
         title: "Success",
         description: `Deal marked as ${action === "won" ? "won" : "lost"} successfully.`,
       });
-      onSuccess();
+      onSuccess(1, 10); // Refresh the deals list
       onOpenChange(false);
     } catch (error) {
       toast({

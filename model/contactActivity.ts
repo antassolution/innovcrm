@@ -20,6 +20,8 @@ const ContactActivitySchema = new Schema<ContactActivity>({
   
 });
 
+
+
 const ContactActivityModel = mongoose.models.ContactActivity || mongoose.model<ContactActivity>('ContactActivity', ContactActivitySchema);
 
 export { ContactActivityModel };

@@ -35,4 +35,8 @@ const ContactSchema: Schema = new Schema<IContact>(
   { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
+ContactSchema.index({ createdAt: 1 });
+
+
+
 export default mongoose.models.Contact || mongoose.model<IContact>('Contact', ContactSchema);

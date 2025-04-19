@@ -6,7 +6,7 @@ import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 
 interface DealToolbarProps {
-  onRefresh: () => void;
+  onRefresh: (page:number, limit:number) => void;
   showNewDeal?: boolean;
 }
 

@@ -16,7 +16,7 @@ export async function GET(req: NextRequest,{ params }: { params: { tenantId: str
     const skip = (page - 1) * limit;
 
     // Build query object based on parameters
-    const query: any = {};
+    const query: any = {tenantId: params.tenantId};
     
     if (category) {
       query.category = category;

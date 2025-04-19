@@ -22,7 +22,7 @@ export async function GET(
     const assignedTo = searchParams.get('assignedTo');
 
     // Build query
-    const query: Record<string, any> = {};
+    const query: Record<string, any> = {'tenantId': params.tenantId};
     
     if (id) {
       if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -78,10 +78,10 @@ export async function GET(
       return NextResponse.json({
         data,
         pagination: {
-          total,
+          totalItems: total,
           page,
           limit,
-          pages: Math.ceil(total / limit),
+          totalPages: Math.ceil(total / limit),
         },
       });
     }

@@ -3,12 +3,13 @@ import Contact from '@/model/contact';
 import dbConnect from '@/lib/dbConnect';
 
 // GET by ID: Fetch a single contact by ID
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(req: Request, { params }: { params: { id: string , tenantId: string} }) {
+  const { id, tenantId } = params;
 
   await dbConnect();
-  const contact = await Contact.findById(id);
-
+  console.log('Fetching contact with ID:', id, 'and tenantId:', tenantId);
+  const contact = await Contact.findOne({ _id: id, tenantId });
+  console.log('Contact found:', contact);
   if (!contact) {
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
   }
@@ -18,11 +19,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
 // PUT: Update an existing contact by ID
 export async function PUT(req: Request, { params }: { params: { id: string, tenantId: string } }) {
-  const { id } = params;
+  const { id, tenantId } = params;
   const body = await req.json();
 
   await dbConnect();
-  const updatedContact = await Contact.findByIdAndUpdate(id, body, { new: true });
+  const updatedContact = await Contact.findOneAndUpdate({ _id: id, tenantId }, body, { new: true });
 
   if (!updatedContact) {
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
@@ -33,10 +34,10 @@ export async function PUT(req: Request, { params }: { params: { id: string, tena
 
 // DELETE: Remove a contact by ID
 export async function DELETE(req: Request, { params }: { params: { id: string, tenantId: string } }) {
-  const { id } = params;
+  const { id, tenantId } = params;
 
   await dbConnect();
-  const deletedContact = await Contact.findByIdAndDelete(id);
+  const deletedContact = await Contact.findOneAndDelete({ _id: id, tenantId });
 
   if (!deletedContact) {
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 });

@@ -15,27 +15,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { usePipelineStages } from "@/hooks/usePipelineStages";
 
 interface DealPipelineProps {
   deals: Deal[];
   onUpdate: () => void;
 }
 
-const stages = [
-  { id: 'qualification', label: 'Qualification' },
-  { id: 'meeting', label: 'Meeting' },
-  { id: 'proposal', label: 'Proposal' },
-  { id: 'negotiation', label: 'Negotiation' },
-  { id: 'closing', label: 'Closing' },
-] as const;
-
 export function DealPipeline({ deals, onUpdate }: DealPipelineProps) {
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDealForm, setShowDealForm] = useState(false);
   const { toast } = useToast();
 
+  // Fetch pipeline stages dynamically
+  const { data: stages } = usePipelineStages();
+
+  console.log("Pipeline Stages", stages);
+
   const handleDragStart = (e: React.DragEvent, deal: Deal) => {
-    e.dataTransfer.setData('dealId', deal.id);
+    e.dataTransfer.setData('dealId', deal._id);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -61,15 +59,15 @@ export function DealPipeline({ deals, onUpdate }: DealPipelineProps) {
     }
   };
 
-  const dealsByStage = stages.reduce((acc, stage) => {
-    acc[stage.id] = deals.filter(deal => deal.stage === stage.id);
+  const dealsByStage = stages?.reduce((acc, stage) => {
+    acc[stage.id] = deals?.filter(deal => deal.stageId === stage.id);
     return acc;
   }, {} as Record<string, Deal[]>);
 
   return (
     <>
       <div className="grid grid-cols-5 gap-4">
-        {stages.map((stage) => (
+        {stages?.map((stage) => (
           <Card
             key={stage.id}
             className="h-[calc(100vh-300px)] overflow-hidden"
@@ -78,17 +76,17 @@ export function DealPipeline({ deals, onUpdate }: DealPipelineProps) {
           >
             <CardHeader className="p-4">
               <CardTitle className="text-sm font-medium flex items-center justify-between">
-                {stage.label}
+                {stage.name.toUpperCase()}
                 <Badge variant="secondary" className="ml-2">
-                  {dealsByStage[stage.id].length}
+                  {dealsByStage[stage.id]?.length || 0}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 overflow-auto">
               <div className="space-y-2">
-                {dealsByStage[stage.id].map((deal) => (
+                {dealsByStage[stage.id]?.map((deal) => (
                   <div
-                    key={deal.id}
+                    key={deal._id}
                     draggable
                     onDragStart={(e) => handleDragStart(e, deal)}
                     onClick={() => {
@@ -120,12 +118,12 @@ export function DealPipeline({ deals, onUpdate }: DealPipelineProps) {
       </div>
 
       <Dialog open={showDealForm} onOpenChange={setShowDealForm}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl mx-auto overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle>{selectedDeal ? 'Edit Deal' : 'New Deal'}</DialogTitle>
           </DialogHeader>
           <DealForm
-            deal={selectedDeal}
+            deal={selectedDeal || undefined}
             onSuccess={() => {
               setShowDealForm(false);
               setSelectedDeal(null);

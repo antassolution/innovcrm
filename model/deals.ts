@@ -124,5 +124,8 @@ DealSchema.index({ assignedTo: 1 });
 DealSchema.index({ stageId: 1 });
 DealSchema.index({ status: 1 });
 DealSchema.index({ nextActionDate: 1 });
+DealSchema.index({ createdAt: 1 });
+
+
 
 export default mongoose.models.Deal || mongoose.model<IDeal>('Deal', DealSchema);

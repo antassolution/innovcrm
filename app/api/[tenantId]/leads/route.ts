@@ -19,8 +19,11 @@ export async function GET(
     // Get total count for pagination
     const totalLeads = await Lead.countDocuments();
     
+    const query: any = {tenantId: params.tenantId};
+
+
     // Get leads with pagination
-    const leads = await Lead.find()
+    const leads = await Lead.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

@@ -191,7 +191,7 @@ export function DealForm({ deal, onSuccess }: DealFormProps) {
                         <SelectContent>
                           {customers?.data?.map((customer) => (
                             <SelectItem key={customer._id} value={customer._id}>
-                              {customer.firstName} - {customer.lastName}  - {customer.company}
+                              {customer.firstName} - {customer.lastName} 
                             </SelectItem>
                           ))}
                         </SelectContent>

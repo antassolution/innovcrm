@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Deal } from "@/types";
+import { Deal, PaginatedResult } from "@/types";
 import {
   Table,
   TableBody,
@@ -17,31 +17,29 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { DealStatusDialog } from "./DealStatusDialog";
 import { useUsers } from "@/hooks/useUsers";
+import { Pagination } from "@/components/ui/pagination";
 
 interface DealListProps {
-  deals: Deal[];
+  deals: PaginatedResult<Deal>;
   loading: boolean;
-  onRefresh: () => void;
+  onRefresh: (page:number, limit:number) => void;
 }
 
 const statusColors = {
   'lead': 'secondary',
   'opportunity': 'default',
-  'proposal': 'primary',
-  'negotiation': 'warning',
-  'closed-won': 'success',
+  'proposal': 'secondary', // Mapped to a valid variant
+  'negotiation': 'default', // Mapped to a valid variant
+  'closed-won': 'default', // Mapped to a valid variant
   'closed-lost': 'destructive',
 } as const;
 
 export function DealList({ deals, loading, onRefresh }: DealListProps) {
   const [selectedDeal, setSelectedDeal] = useState<string | null>(null);
   const [statusAction, setStatusAction] = useState<"won" | "lost" | null>(null);
-
+  const [currentPage, setCurrentPage] = useState<number>(deals? deals?.pagination?.page : 1);
 
   const { users, loading: loadingUsers } = useUsers();
-      
-        
-        // Filter users to only include sales reps and management
         const salesUsers = users?.filter(user => 
           user.role === 'sales-rep' || user.role === 'sales-mgr' || user.role === 'admin'
         ) || [];
@@ -49,6 +47,11 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
   const handleStatusChange = (dealId: string, action: "won" | "lost") => {
     setSelectedDeal(dealId);
     setStatusAction(action);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    onRefresh(page, deals.pagination.limit);
   };
 
   if (loading) {
@@ -59,7 +62,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
     );
   }
 
-  if (deals?.length === 0) {
+  if (deals?.data?.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-muted-foreground">No deals found</div>
@@ -83,7 +86,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {deals?.map((deal) => (
+          {deals?.data?.map((deal) => (
             <TableRow key={deal._id}>
               <TableCell className="font-medium">{deal.title}</TableCell>
               <TableCell>${deal.value.toLocaleString()}</TableCell>
@@ -100,7 +103,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
                 {format(new Date(deal.expectedCloseDate), "MMM d, yyyy")}
               </TableCell>
               <TableCell>
-                <Badge variant={statusColors[deal.status]}>
+                <Badge variant={statusColors[deal.status as keyof typeof statusColors] || "default"}>
                   {deal.status}
                 </Badge>
               </TableCell>
@@ -137,6 +140,12 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
           ))}
         </TableBody>
       </Table>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={deals?.pagination?.totalPages}
+        onPageChange={handlePageChange}
+      />
 
       {selectedDeal && statusAction && (
         <DealStatusDialog
