@@ -9,12 +9,24 @@ export async function GET(req: Request,  { params }: { params: { tenantId: strin
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '10', 10); 
   const email= searchParams.get('email') || undefined;
+  const name= searchParams.get('name') || undefined;
+  const phone= searchParams.get('phone') || undefined;
   await dbConnect();
 
    // Build the query object
    const query: any = {tenantId: params.tenantId};
    if (email) {
      query.email = email;
+   }
+   if (name) {
+     const nameRegex = new RegExp(name, 'i'); // Case-insensitive regex for name search
+     query.$or = [
+       { firstName: nameRegex },
+       { lastName: nameRegex }
+     ];
+   }
+   if (phone) {
+     query.phone = phone;
    }
 
   const contacts = await Contact.find(query)

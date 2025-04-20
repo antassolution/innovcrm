@@ -16,13 +16,15 @@ import Link from "next/link";
 interface ContactToolbarProps {
   filters: ContactFilters;
   onFiltersChange: (filters: ContactFilters) => void;
-  onSearch: (query: string) => void;
+  onSearchKeyPress: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onSearchChange: (value: string) => void;
 }
 
 export function ContactToolbar({
   filters,
   onFiltersChange,
-  onSearch,
+  onSearchKeyPress,
+  onSearchChange,
 }: ContactToolbarProps) {
   return (
     <div className="flex flex-wrap gap-4">
@@ -32,7 +34,8 @@ export function ContactToolbar({
           <Input
             placeholder="Search contacts..."
             value={filters.search}
-            onChange={(e) => onSearch(e.target.value)}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyPress={onSearchKeyPress}
             className="pl-10"
           />
         </div>

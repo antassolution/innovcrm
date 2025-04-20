@@ -22,6 +22,13 @@ import { usePathname } from "next/navigation";
 
 const navigation = [
   {
+    name: "Dashboard",
+    icon: BarChart4,
+    items: [
+      { name: "Overview", href: "/dashboard", icon: BarChart4 },
+    ],
+  },
+  {
     name: "Contact Management",
     icon: Users,
     items: [

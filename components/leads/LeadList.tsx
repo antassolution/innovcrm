@@ -26,7 +26,7 @@ import { masterDataService } from "@/services/masterDataService";
 interface LeadListProps {
   leads: PaginatedResult<Lead>;
   loading: boolean;
-  onRefresh: () => void;
+  onRefresh: (page: number, name: string) => void;
   onPageChange: (page: number) => void;
 }
 
@@ -104,7 +104,7 @@ export function LeadList({ leads, loading, onRefresh, onPageChange }: LeadListPr
         });
       }
       
-      onRefresh();
+      onRefresh(leads.pagination.page, '');
     } catch (error) {
       console.error("Error converting lead:", error);
       toast({
@@ -246,7 +246,7 @@ export function LeadList({ leads, loading, onRefresh, onPageChange }: LeadListPr
         onOpenChange={setShowAssignDialog}
         onSuccess={() => {
           setSelectedLeads([]);
-          onRefresh();
+          onRefresh(leads.pagination.page, ''); 
         }}
         selectedLeads={selectedLeads}
       />

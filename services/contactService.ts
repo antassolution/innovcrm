@@ -6,7 +6,7 @@ export const contactService = {
     const response = await httpClient.get('/api/contacts', {
       params: { page, pageSize },
     });
-    return response.data;
+    return response.data; 
   },
 
   getContactById: async (id: string): Promise<Contact | undefined> => {
@@ -39,8 +39,8 @@ export const contactService = {
     return response.data;
   },
 
-  searchContacts: async (query: string): Promise<PaginatedResult<Contact>> => {
-    const response = await httpClient.get(`/api/contacts`, { params: { query } });
+  searchContacts: async (params: { email?: string; phone?: string; name?: string }): Promise<PaginatedResult<Contact>> => {
+    const response = await httpClient.get(`/api/contacts`, { params });
     return response.data;
   },
 

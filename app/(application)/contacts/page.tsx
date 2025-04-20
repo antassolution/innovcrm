@@ -53,15 +53,31 @@ export default function ContactsPage() {
     setSortOrder(newOrder);
   };
 
-  const handleSearch = async (query: string) => {
-    setFilters({ ...filters, search: query });
-    if (query.trim()) {
-      const results = await contactService.searchContacts(query);
-
-      setContacts(results);
-    } else {
-      loadContacts();
+  const handleSearchKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      const query = (event.target as HTMLInputElement).value;
+      setFilters({ ...filters, search: query });
+      if (query.trim()) {
+        let results;
+        if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(query)) {
+          // Search by email
+          results = await contactService.searchContacts({ email: query });
+        } else if (/^\+?\d+$/.test(query)) {
+          // Search by phone number
+          results = await contactService.searchContacts({ phone: query });
+        } else {
+          // Search by name
+          results = await contactService.searchContacts({ name: query });
+        }
+        setContacts(results);
+      } else {
+        loadContacts();
+      }
     }
+  };
+
+  const handleSearchChange = (value: string) => {
+    setFilters({ ...filters, search: value });
   };
 
   const handleBulkAction = async (action: string) => {
@@ -138,14 +154,15 @@ export default function ContactsPage() {
       <div className="border-b">
         <div className="flex h-16 items-center px-8">
           <h1 className="text-2xl font-semibold">Contacts</h1>
-        </div>
+        </div> 
       </div>
 
       <div className="p-8 space-y-6">
         <ContactToolbar
           filters={filters}
           onFiltersChange={setFilters}
-          onSearch={handleSearch}
+          onSearchKeyPress={handleSearchKeyPress}
+          onSearchChange={handleSearchChange}
         />
 
         {selectedContacts.length > 0 && (

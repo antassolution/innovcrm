@@ -2,12 +2,20 @@ import { Lead, PaginatedResult } from '@/types';
 import  httpClient from '@/lib/httpClient';
 
 export const leadService = {
-  getLeads: async (page: number = 1, pageSize: number = 10): Promise<PaginatedResult<Lead>> => {
+  getLeads: async (page: number = 1, pageSize: number = 10, name: string =''): Promise<PaginatedResult<Lead>> => {
     try {
+      const params: any = { page, pageSize };
+
+      // Extract name from searchParams and add to query if provided
+      // const name = searchParams.get('name');
+      if (name) {
+        params.name = name;
+      }
+
       const response = await httpClient.get('/api/leads', {
-        params: { page, pageSize },
+        params,
       });
-      return response.data;
+      return response.data; 
     } catch (error) {
       console.error('Error fetching leads:', error);
       throw error;
@@ -85,5 +93,17 @@ export const leadService = {
       console.error('Error assigning leads:', error);
       throw error;
     }
-  }
+  },
+
+  searchLeadsByName: async (name: string): Promise<PaginatedResult<Lead>> => {
+    try {
+      const response = await httpClient.get('/api/leads', {
+        params: { name, searchFields: ['title', 'description'] },
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error searching leads by name:', error);
+      throw error;
+    }
+  },
 };

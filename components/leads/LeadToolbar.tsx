@@ -4,12 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface LeadToolbarProps {
-  onRefresh: () => void;
+  onRefresh: (page: number, name: string) => void;
 }
 
 export function LeadToolbar({ onRefresh }: LeadToolbarProps) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      console.log("Search term:", searchTerm);
+     // event.preventDefault();
+      onRefresh(1, searchTerm);
+    }
+  };
+
   return (
     <div className="flex flex-wrap gap-4">
       <div className="flex-1 min-w-[300px]">
@@ -18,7 +31,10 @@ export function LeadToolbar({ onRefresh }: LeadToolbarProps) {
           <Input
             placeholder="Search leads..."
             className="pl-10"
-          />
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearch}
+          /> 
         </div>
       </div>
 

@@ -21,6 +21,14 @@ export async function GET(
     
     const query: any = {tenantId: params.tenantId};
 
+    // Add name to query if provided
+    const name = searchParams.get('name');
+    if (name) {
+      query.$or = [
+        { firstName: { $regex: name, $options: 'i' } },
+        { lastName: { $regex: name, $options: 'i' } }
+      ]; // Case-insensitive search for title or description
+    }
 
     // Get leads with pagination
     const leads = await Lead.find(query)
@@ -31,7 +39,7 @@ export async function GET(
 
     return NextResponse.json({
       data: leads,
-      pagination: {
+      pagination: { 
         page,
         limit,
         totalItems: totalLeads,

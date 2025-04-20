@@ -22,13 +22,14 @@ export default function LeadsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadLeads(currentPage);
+    loadLeads(currentPage,'');
   }, [currentPage]);
 
-  const loadLeads = async (page: number = 1) => {
+  const loadLeads = async (page: number = 1, name:string) => {
     try {
       setLoading(true);
-      const data = await leadService.getLeads(page, 10);
+      console.log("Loading leads for name:", name);
+      const data = await leadService.getLeads(page, 10, name);
       setLeads(data);
     } catch (error) {
       console.error("Failed to load leads:", error);
@@ -55,12 +56,12 @@ export default function LeadsPage() {
       </div>
 
       <div className="p-8 space-y-6">
-        <LeadToolbar onRefresh={() => loadLeads(currentPage)} />
+        <LeadToolbar onRefresh={loadLeads} />
         <div className="rounded-lg border bg-card">
           <LeadList 
             leads={leads} 
             loading={loading} 
-            onRefresh={() => loadLeads(currentPage)} 
+            onRefresh={() => loadLeads(currentPage,'')} 
             onPageChange={handlePageChange}
           />
         </div>
