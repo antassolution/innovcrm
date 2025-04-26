@@ -59,7 +59,7 @@ export const dealService = {
     const response = await httpClient.get(`/api/deals?customerId=${customerId}`);
     return response.data.data;
   },
-  
+   
   /**
    * Get deals assigned to a specific user
    */

@@ -25,10 +25,11 @@ export default function AllDealsPage() {
     loadDeals(1, 10);
   }, []);
 
-  const loadDeals = async (page: number, limit: number) => {
+  const loadDeals = async (page: number, limit: number, title?: string) => {
     try {
-      console.log("Loading deals for page:", page, "with limit:", limit);
-      const data = await dealService.getDeals({}, page, limit);
+      console.log("Loading deals for page:", page, "with limit:", limit, "and title:", title);
+      const filter = title ? { title } : {};
+      const data = await dealService.getDeals(filter, page, limit);
       setDeals(data);
     } catch (error) {
       console.error("Failed to load deals:", error);

@@ -1,6 +1,6 @@
-import httpClient  from "@/lib/httpClient";
+import httpClient from "@/lib/httpClient";
 
-export const getDashboardData = async (tenantId: string) => {
+export const getDashboardData = async () => {
   try {
     const response = await httpClient.get(`/api/dashboard`);
     return response.data;

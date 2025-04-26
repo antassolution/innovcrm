@@ -13,11 +13,7 @@ export async function middleware(request: NextRequest) {
     const publicPaths = ['/', '/login', '/register']
 
     const isPublicPath = publicPaths.includes(pathname) || pathname.startsWith('/api/auth') || pathname.startsWith('/_next') || pathname === '/favicon.ico'
-    console.log('isPublicPath', isPublicPath)
-    console.log('pathname', pathname)
-    console.log('authToken', authToken)
-    console.log('(!isPublicPath && !authToken)', (!isPublicPath && !authToken))
-    if (!isPublicPath && !authToken) {
+     if (!isPublicPath && !authToken) {
         console.log('Redirecting to login')
         return NextResponse.redirect(new URL('/login', request.url))
     }
@@ -28,6 +24,17 @@ export async function middleware(request: NextRequest) {
             const secret = new TextEncoder().encode(JWT_SECRET);
             const { payload } = await jwtVerify(authToken.value, secret);
             const tokenTenantId = payload.tenantId as string;
+
+            const userId = payload.userId as string;
+            
+            // Create a new response that includes headers from the original request
+            const response = NextResponse.next();
+            
+            // Set the userId in the request headers for the API routes
+            if (userId) {
+                response.headers.set('x-user-id', userId);
+            }
+
             if (!tokenTenantId) {
                return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
             }
@@ -41,7 +48,7 @@ export async function middleware(request: NextRequest) {
             }
 
             // Tenant ID matches, allow the request
-            return NextResponse.next();
+            return response;
         } catch (error) {
             return NextResponse.json({ error: 'Invalid token' }, { status: 403 });
         }

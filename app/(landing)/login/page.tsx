@@ -47,18 +47,17 @@ export default function LoginPage() {
         title: "Success",
         description: "Welcome back!",
       });
-      router.push("/dashboard");
+      
+      // Use window.location for a full page navigation instead of router.push
+      // This prevents the SEGMENT MISMATCH error when navigating between route groups
+      window.location.href = "/dashboard";
     } catch {
       console.error("Login failed");
       toast({
         title: "Error",
         variant: "destructive",
-
-
         description: "Invalid username or password!",
-
       });
-      
     }
   };
 

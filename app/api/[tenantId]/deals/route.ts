@@ -20,6 +20,7 @@ export async function GET(
     const status = searchParams.get('status');
     const stageId = searchParams.get('stageId');
     const assignedTo = searchParams.get('assignedTo');
+    const title = searchParams.get('title');
 
     // Build query
     const query: Record<string, any> = {'tenantId': params.tenantId};
@@ -38,7 +39,7 @@ export async function GET(
     if (status) {
       query.status = status;
     }
-    
+     
     if (stageId && mongoose.Types.ObjectId.isValid(stageId)) {
       query.stageId = stageId;
     }
@@ -46,6 +47,11 @@ export async function GET(
     if (assignedTo && mongoose.Types.ObjectId.isValid(assignedTo)) {
       query.assignedTo = assignedTo;
     }
+
+    if (title) {
+      query.title = { $regex: title, $options: 'i' }; // Case-insensitive wildcard search
+    }
+
     await dbConnect();
     // Fetch data
     let data;

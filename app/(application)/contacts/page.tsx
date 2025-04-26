@@ -149,6 +149,8 @@ export default function ContactsPage() {
     return matchesCategory && matchesTags && matchesGroups;
   });
 
+  console.log("Filtered Contacts:", filteredContacts);
+
   return (
     <div className="h-full bg-background">
       <div className="border-b">

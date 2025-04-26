@@ -7,6 +7,7 @@ interface IUser extends Document {
   email: string;
   password: string;
   role: string;
+  permissions: string[];
   tenantId: Schema.Types.ObjectId;
   status: string;
   createdAt: Date;
@@ -21,6 +22,7 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, required: true, enum: ['admin', 'sales-mgr', 'sales-rep','user'] },
+    permissions: { type: [String], default: [] },
     tenantId: { type: Schema.Types.ObjectId, ref: 'Tenant', required: true },
     status: { type: String, required: true, enum: ['active', 'disabled'] },
 

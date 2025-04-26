@@ -22,7 +22,7 @@ import { Pagination } from "@/components/ui/pagination";
 interface DealListProps {
   deals: PaginatedResult<Deal>;
   loading: boolean;
-  onRefresh: (page:number, limit:number) => void;
+  onRefresh: (page:number, limit:number, title?: string) => void;
 }
 
 const statusColors = {
@@ -51,7 +51,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    onRefresh(page, deals.pagination.limit);
+    onRefresh(page, deals.pagination.limit, '');
   };
 
   if (loading) {

@@ -26,4 +26,14 @@ export const userService = {
     const response = await httpClient.patch(`/api/users/${id}`, { action: 'toggleStatus' });
     return response.data;
   },
+
+  updatePassword: async (userId: string, password: string): Promise<{ success: boolean; message: string }> => {
+    const response = await httpClient.post('/api/users/password', { userId, password });
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await httpClient.get('/api/users/me');
+    return response.data;
+  },
 };

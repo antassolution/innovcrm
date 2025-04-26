@@ -47,12 +47,15 @@ export default function RegisterPage() {
 
   const onSubmit = async (values: z.infer<typeof registerSchema>) => {
     try {
-      await register(values);
+      const response = await register(values);
       toast({
         title: "Success",
         description: "Your account has been created successfully.",
       });
-      router.push("/dashboard");
+      
+      // Use window.location for a full page navigation instead of router.push
+      // This prevents the SEGMENT MISMATCH error when navigating between route groups
+      window.location.href = "/dashboard";
     } catch {
       toast({
         title: "Error",

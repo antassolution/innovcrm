@@ -12,7 +12,7 @@ export const createCheckoutSession = async (plan: string) => {
 
 export const validateSession = async (sessionId: string) => {
   try {
-    const response = await httpClient.post(`/api/subscriptions/validate?session_id=${sessionId}`);
+    const response = await httpClient.post(`/api/subscriptions/status?session_id=${sessionId}`);
     return response.data;
   } catch (error) {
     console.error('Error validating session:', error);

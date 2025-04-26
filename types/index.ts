@@ -180,6 +180,7 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'admin' | 'sales-mgr' | 'sales-rep' | 'user';
+  permissions?: string[];
   status: 'active' | 'disabled';
   createdAt: string;
   updatedAt: string;
@@ -243,6 +244,7 @@ export const userSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
   lastName: z.string().min(2, "Last name is required"),
   role: z.enum(['admin', 'sales-mgr', 'sales-rep', 'user']),
+  permissions: z.array(z.string()).optional(),
   status: z.enum(['active', 'disabled']),
 });
 
@@ -287,3 +289,19 @@ export interface PaginatedResult<T> {
     totalItems: number;
   };
 }
+
+export const PERMISSION_TYPES = {
+  CONTACT_MANAGEMENT: "Contact Management",
+  LEAD_MANAGEMENT: "Lead Management",
+  DEALS_MANAGEMENT: "Deals Management",
+  ADMINISTRATION: "Administration"
+} as const;
+
+export type PermissionType = typeof PERMISSION_TYPES[keyof typeof PERMISSION_TYPES];
+
+export const AVAILABLE_PERMISSIONS: PermissionType[] = [
+  PERMISSION_TYPES.CONTACT_MANAGEMENT,
+  PERMISSION_TYPES.LEAD_MANAGEMENT,
+  PERMISSION_TYPES.DEALS_MANAGEMENT,
+  PERMISSION_TYPES.ADMINISTRATION
+];

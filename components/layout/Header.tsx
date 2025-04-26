@@ -13,12 +13,31 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { userService } from "@/services/userService";
 
 export function Header() {
   const router = useRouter();
+  const [currentUser, setCurrentUser] = useState<{
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const userData = await userService.getCurrentUser();
+        setCurrentUser(userData);
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+      }
+    };
+
+    fetchCurrentUser();
+  }, []);
 
   const handleLogout = () => {
-
     // Clear session storage
     sessionStorage.clear();
 
@@ -27,6 +46,20 @@ export function Header() {
 
     // Redirect to home page
     router.push("/logout");
+  };
+
+  // Generate initials for avatar fallback
+  const getInitials = () => {
+    if (!currentUser) return "U";
+    const firstInitial = currentUser.firstName ? currentUser.firstName.charAt(0) : "";
+    const lastInitial = currentUser.lastName ? currentUser.lastName.charAt(0) : "";
+    return `${firstInitial}${lastInitial}` || "U";
+  };
+
+  // Get full name
+  const getFullName = () => {
+    if (!currentUser) return "User";
+    return `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim() || "User";
   };
 
   return (
@@ -53,34 +86,25 @@ export function Header() {
 
         {/* Actions Section - Right */}
         <div className="flex shrink-0 items-center gap-2 ml-auto">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5 text-muted-foreground" />
-            <span className="absolute top-1 right-1 h-2 w-2 bg-accent rounded-full" />
-          </Button>
-
+         
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="https://github.com/shadcn.png" alt="User" />
-                  <AvatarFallback>JD</AvatarFallback>
+                  <AvatarFallback>{getInitials()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">John Doe</p>
-                  <p className="text-xs leading-none text-muted-foreground">john@example.com</p>
+                  <p className="text-sm font-medium leading-none">{getFullName()}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{currentUser?.email || "loading..."}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
-                <User className="mr-2 h-4 w-4" /> Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer hover:bg-gray-100">
-                <Settings className="mr-2 h-4 w-4" /> Settings
-              </DropdownMenuItem>
+              
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive cursor-pointer hover:bg-gray-100" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" /> Log out

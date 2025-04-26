@@ -42,7 +42,7 @@ const DealSchema: Schema = new Schema(
     },
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Contacts',
+      ref: 'Contact',
       required: [true, 'Customer is required'],
     },
 
