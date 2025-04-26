@@ -4,6 +4,8 @@ import User from '@/model/user';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { sendEmail, emailTemplates } from '@/lib/emailUtils';
+import Settings from '@/model/settings';
 
 // Password update schema
 const passwordUpdateSchema = z.object({
@@ -61,6 +63,22 @@ export async function POST(
       { _id: user._id },
       { $set: { password: hashedPassword } }
     );
+    
+    // Get company name for email template
+    const settings = await Settings.findOne({ tenantId: new mongoose.Types.ObjectId(tenantId) });
+    const companyName = settings?.companyInfo?.name || 'Your Company';
+    
+    // Send password change notification email
+    if (user.email) {
+      const userName = `${user.firstName} ${user.lastName}`;
+      const emailHtml = emailTemplates.passwordChange(userName, companyName);
+      
+      await sendEmail(tenantId, {
+        to: user.email,
+        subject: 'Password Changed',
+        html: emailHtml
+      });
+    }
     
     return NextResponse.json({ 
       success: true, 
