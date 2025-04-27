@@ -39,7 +39,7 @@ export const contactService = {
     return response.data;
   },
 
-  searchContacts: async (params: { email?: string; phone?: string; name?: string }): Promise<PaginatedResult<Contact>> => {
+  searchContacts: async (params: { email?: string; phone?: string; name?: string;category?:string }): Promise<PaginatedResult<Contact>> => {
     const response = await httpClient.get(`/api/contacts`, { params });
     return response.data;
   },

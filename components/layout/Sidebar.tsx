@@ -57,8 +57,8 @@ const navigation = [
     items: [
       { name: "Pipeline View", href: "/deals", icon: BarChart4 },
       { name: "All Deals", href: "/deals/all", icon: Target },
-      { name: "Won Deals", href: "/deals/won", icon: CheckCircle2 },
-      { name: "Lost Deals", href: "/deals/lost", icon: XCircle },
+      // { name: "Won Deals", href: "/deals/won", icon: CheckCircle2 },
+      // { name: "Lost Deals", href: "/deals/lost", icon: XCircle },
     ],
     permission: PERMISSION_TYPES.DEALS_MANAGEMENT,
   },

@@ -24,9 +24,60 @@ export default function ContactsPage() {
   });
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadContacts();
-  }, []);
+// Update the useEffect to use the generic function
+useEffect(() => {
+  searchContacts(filters.search);
+}, [filters.category, filters.tags, filters.groups]);
+
+// For filter changes
+const handleFilterChange = async () => {
+  await searchContacts(filters.search);
+};
+
+// Generic function to handle contact search and filtering
+const searchContacts = async (searchQuery: string, categoryFilter: string = filters.category) => {
+  setLoading(true);
+  try {
+    let searchParams: any = {};
+    
+    // Add category to search params if it's not "all"
+    if (categoryFilter !== "all") {
+      searchParams.category = categoryFilter;
+    }
+    
+    // Add other search criteria based on the query
+    if (searchQuery.trim()) {
+      if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(searchQuery)) {
+        // Search by email
+        searchParams.email = searchQuery;
+      } else if (/^\+?\d+$/.test(searchQuery)) {
+        // Search by phone number
+        searchParams.phone = searchQuery;
+      } else {
+        // Search by name
+        searchParams.name = searchQuery;
+      }
+    }
+    
+    // Only call API if we have some search parameters
+    if (Object.keys(searchParams).length > 0) {
+      const results = await contactService.searchContacts(searchParams);
+      setContacts(results);
+    } else {
+      // If no search parameters, load all contacts
+      loadContacts();
+    }
+  } catch (error) {
+    console.error("Failed to search contacts:", error);
+    toast({
+      title: "Error",
+      description: "Failed to search contacts. Please try again.",
+      variant: "destructive",
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const loadContacts = async (page?: number) => {
     setLoading(true);
@@ -53,28 +104,38 @@ export default function ContactsPage() {
     setSortOrder(newOrder);
   };
 
-  const handleSearchKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      const query = (event.target as HTMLInputElement).value;
-      setFilters({ ...filters, search: query });
-      if (query.trim()) {
-        let results;
-        if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(query)) {
-          // Search by email
-          results = await contactService.searchContacts({ email: query });
-        } else if (/^\+?\d+$/.test(query)) {
-          // Search by phone number
-          results = await contactService.searchContacts({ phone: query });
-        } else {
-          // Search by name
-          results = await contactService.searchContacts({ name: query });
-        }
-        setContacts(results);
-      } else {
-        loadContacts();
-      }
-    }
-  };
+  // Simplified event handler that uses the generic function
+const handleSearchKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+  if (event.key === 'Enter') {
+    const query = (event.target as HTMLInputElement).value;
+    setFilters({ ...filters, search: query });
+    await searchContacts(query);
+  }
+};
+
+
+  // const handleSearchKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+  //   if (event.key === 'Enter') {
+  //     const query = (event.target as HTMLInputElement).value;
+  //     setFilters({ ...filters, search: query });
+  //     if (query.trim()) {
+  //       let results;
+  //       if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(query)) {
+  //         // Search by email
+  //         results = await contactService.searchContacts({ email: query });
+  //       } else if (/^\+?\d+$/.test(query)) {
+  //         // Search by phone number
+  //         results = await contactService.searchContacts({ phone: query });
+  //       } else {
+  //         // Search by name
+  //         results = await contactService.searchContacts({ name: query });
+  //       }
+  //       setContacts(results);
+  //     } else {
+  //       loadContacts();
+  //     }
+  //   }
+  // };
 
   const handleSearchChange = (value: string) => {
     setFilters({ ...filters, search: value });

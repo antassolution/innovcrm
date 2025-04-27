@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Lead, PaginatedResult } from "@/types";
+import { useState, useEffect, useCallback } from "react";
+import { Lead, PaginatedResult, User } from "@/types";
 import { leadService } from "@/services/leadService";
 import { LeadList } from "@/components/leads/LeadList";
 import { LeadToolbar } from "@/components/leads/LeadToolbar";
 import { useToast } from "@/hooks/use-toast";
+import { useUsers } from "@/hooks/useUsers";
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<PaginatedResult<Lead>>({
@@ -18,18 +19,20 @@ export default function LeadsPage() {
     }
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentName, setCurrentName] = useState('');
+  const [currentAssignedTo, setCurrentAssignedTo] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { users, loading: loadingUsers } = useUsers();
 
-  useEffect(() => {
-    loadLeads(currentPage,'');
-  }, [currentPage]);
-
-  const loadLeads = async (page: number = 1, name:string) => {
+  // Memoize the loadLeads function to prevent recreation on each render
+  const loadLeads = useCallback(async (page: number = 1, name: string = '', assignedTo?: string) => {
     try {
       setLoading(true);
-      console.log("Loading leads for name:", name);
-      const data = await leadService.getLeads(page, 10, name);
+      setCurrentName(name);
+      setCurrentAssignedTo(assignedTo);
+      
+      const data = await leadService.getLeads(page, 10, name, assignedTo);
       setLeads(data);
     } catch (error) {
       console.error("Failed to load leads:", error);
@@ -41,11 +44,22 @@ export default function LeadsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  const handlePageChange = (page: number) => {
+  // Memoize the page change handler
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
-  };
+  }, []);
+
+  // Use the effect with proper dependencies
+  useEffect(() => {
+    loadLeads(currentPage, currentName, currentAssignedTo);
+  }, [currentPage, loadLeads, currentName, currentAssignedTo]);
+
+  // Memoize the refresh handler for LeadList
+  const handleListRefresh = useCallback((page: number, name: string) => {
+    loadLeads(page, name, currentAssignedTo);
+  }, [loadLeads, currentAssignedTo]);
 
   return (
     <div className="h-full bg-background">
@@ -56,12 +70,16 @@ export default function LeadsPage() {
       </div>
 
       <div className="p-8 space-y-6">
-        <LeadToolbar onRefresh={loadLeads} />
+        <LeadToolbar 
+          onRefresh={loadLeads} 
+          users={users} 
+          loadingUsers={loadingUsers} 
+        />
         <div className="rounded-lg border bg-card">
           <LeadList 
             leads={leads} 
             loading={loading} 
-            onRefresh={() => loadLeads(currentPage,'')} 
+            onRefresh={handleListRefresh} 
             onPageChange={handlePageChange}
           />
         </div>

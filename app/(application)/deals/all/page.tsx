@@ -25,12 +25,17 @@ export default function AllDealsPage() {
     loadDeals(1, 10);
   }, []);
 
-  const loadDeals = async (page: number, limit: number, title?: string) => {
+  const loadDeals = async (page: number, limit: number, title?: string, status?: string, assignedTo?: string) => {
     try {
-      console.log("Loading deals for page:", page, "with limit:", limit, "and title:", title);
-      const filter = title ? { title } : {};
+      console.log("Loading deals with filters - page:", page, "limit:", limit, "title:", title, "status:", status, "assignedTo:", assignedTo);
+      
+      const filter: Record<string, any> = {};
+      if (title) filter.title = title;
+      if (status && status !== '*') filter.status = status;
+      if (assignedTo && assignedTo !== '*') filter.assignedTo = assignedTo;
+      
       const data = await dealService.getDeals(filter, page, limit);
-      setDeals(data);
+      setDeals(data); 
     } catch (error) {
       console.error("Failed to load deals:", error);
       toast({

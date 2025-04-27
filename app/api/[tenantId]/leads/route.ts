@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import Lead from "@/model/lead";
 import { ILead } from "@/model/lead";
+import mongoose from "mongoose";
 
 export async function GET(
   req: NextRequest,
@@ -29,6 +30,15 @@ export async function GET(
         { lastName: { $regex: name, $options: 'i' } }
       ]; // Case-insensitive search for title or description
     }
+
+     // Add assignedTo filter if provided
+     const assignedTo = searchParams.get('assignedTo');
+     if (assignedTo) {
+       // Check if the ID is valid MongoDB ObjectId to prevent errors
+       if (mongoose.Types.ObjectId.isValid(assignedTo)) {
+         query.assignedTo = assignedTo;
+       }
+     }
 
     // Get leads with pagination
     const leads = await Lead.find(query)

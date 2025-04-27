@@ -16,12 +16,10 @@ export async function GET(req: NextRequest,{ params }: { params: { tenantId: str
   try {
     await dbConnect();
     const existingUser = await Tenant.findOne({ _id: params.tenantId });
-    console.log("existingUser", existingUser);
     if (!existingUser) {
       return NextResponse.json({ success: false, error: "Tenant not found" }, { status: 404 });
     }
     const paymentStatus = existingUser.subscriptionStatus || "unpaid";
-    console.log("paymentStatus", paymentStatus);
 
   
     return NextResponse.json({ success: true, paymentStatus }, { status: 200 });

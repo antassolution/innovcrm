@@ -22,7 +22,7 @@ import { Pagination } from "@/components/ui/pagination";
 interface DealListProps {
   deals: PaginatedResult<Deal>;
   loading: boolean;
-  onRefresh: (page:number, limit:number, title?: string) => void;
+  onRefresh: (page:number, limit:number, title?:string, status?:string, assignedTo?:string) => void;
 }
 
 const statusColors = {
@@ -38,6 +38,11 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
   const [selectedDeal, setSelectedDeal] = useState<string | null>(null);
   const [statusAction, setStatusAction] = useState<"won" | "lost" | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(deals? deals?.pagination?.page : 1);
+  const [currentFilters, setCurrentFilters] = useState({
+    title: '',
+    status: '',
+    assignedTo: ''
+  });
 
   const { users, loading: loadingUsers } = useUsers();
         const salesUsers = users?.filter(user => 
@@ -51,7 +56,7 @@ export function DealList({ deals, loading, onRefresh }: DealListProps) {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    onRefresh(page, deals.pagination.limit, '');
+    onRefresh(page, deals.pagination.limit, currentFilters.title, currentFilters.status, currentFilters.assignedTo);
   };
 
   if (loading) {

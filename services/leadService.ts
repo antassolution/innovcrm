@@ -2,14 +2,18 @@ import { Lead, PaginatedResult } from '@/types';
 import  httpClient from '@/lib/httpClient';
 
 export const leadService = {
-  getLeads: async (page: number = 1, pageSize: number = 10, name: string =''): Promise<PaginatedResult<Lead>> => {
+  getLeads: async (page: number = 1, pageSize: number = 10, name: string ='', assignedTo?: string): Promise<PaginatedResult<Lead>> => {
     try {
       const params: any = { page, pageSize };
 
-      // Extract name from searchParams and add to query if provided
-      // const name = searchParams.get('name');
+      // Add name to query if provided
       if (name) {
         params.name = name;
+      }
+
+      // Add assignedTo to query if provided
+      if (assignedTo && assignedTo !== '*') {
+        params.assignedTo = assignedTo;
       }
 
       const response = await httpClient.get('/api/leads', {

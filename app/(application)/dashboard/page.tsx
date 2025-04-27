@@ -39,7 +39,6 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="p-8 space-y-8">
-        <h1 className="text-4xl font-bold mb-8">Sales Dashboard</h1>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="p-6 bg-card rounded-lg border border-border shadow-sm">
@@ -59,7 +58,6 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="p-8">
-        <h1 className="text-4xl font-bold mb-8">Sales Dashboard</h1>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
@@ -73,8 +71,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold">Sales Dashboard</h1>
+      {/* <div className="flex justify-between items-center mb-8">
         <Tabs defaultValue="overview" className="w-[400px]">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -82,7 +79,7 @@ export default function DashboardPage() {
             <TabsTrigger value="leads" onClick={() => router.push("/leads")}>Leads</TabsTrigger>
           </TabsList>
         </Tabs>
-      </div>
+      </div> */}
 
       <div className="space-y-8">
         {/* Stats Cards */}

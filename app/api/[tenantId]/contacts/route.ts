@@ -8,9 +8,10 @@ export async function GET(req: Request,  { params }: { params: { tenantId: strin
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get('page') || '1', 10);
   const limit = parseInt(searchParams.get('limit') || '10', 10); 
-  const email= searchParams.get('email') || undefined;
-  const name= searchParams.get('name') || undefined;
-  const phone= searchParams.get('phone') || undefined;
+  const email = searchParams.get('email') || undefined;
+  const name = searchParams.get('name') || undefined;
+  const phone = searchParams.get('phone') || undefined;
+  const category = searchParams.get('category') || undefined;
   await dbConnect();
 
    // Build the query object
@@ -27,6 +28,9 @@ export async function GET(req: Request,  { params }: { params: { tenantId: strin
    }
    if (phone) {
      query.phone = phone;
+   }
+   if (category) {
+     query.category = category;
    }
 
   const contacts = await Contact.find(query)
