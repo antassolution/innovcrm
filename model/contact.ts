@@ -23,7 +23,7 @@ const ContactSchema: Schema = new Schema<IContact>(
     lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String },
-    companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+    companyId: { type: String },
     category: { type: String, enum: ['lead', 'customer', 'prospect'], default: 'lead' },
     tags: { type: [String], default: [] },
     groups: { type: [String], default: [] },

@@ -86,7 +86,7 @@ export interface Contact {
   lastContact: string;
   createdAt: string;
   updatedAt: string;
-  notes: string;
+  note: string;
   tags: string[];
   groups: string[];
   assignedTo?: string;

@@ -17,18 +17,10 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Info } from "lucide-react";
-import { useCompanies } from "@/hooks/useCompanies";
 
 const contactSchema = z.object({
   firstName: z.string().min(2, "First name is required"),
@@ -40,7 +32,7 @@ const contactSchema = z.object({
   department: z.string().optional(),
   companyId: z.string().optional(),
   category: z.enum(["lead", "prospect", "customer", "partner"]),
-  notes: z.string().optional(),
+  note: z.string().optional(),
 });
 
 interface ContactFormProps {
@@ -58,14 +50,13 @@ export function ContactForm({
 }: ContactFormProps) {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { data: companies, isLoading: isLoadingCompanies } = useCompanies();
 
   const form = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
     defaultValues: contact
       ? {
-          firstName: contact.firstName.split(" ")[0],
-          lastName: contact.lastName.split(" ").slice(1).join(" "),
+          firstName: contact.firstName,
+          lastName: contact.lastName,
           email: contact.email,
           phone: contact.phone,
           mobile: contact.mobile || "",
@@ -73,7 +64,7 @@ export function ContactForm({
           department: contact.department || "",
           companyId: contact.companyId,
           category: contact.category,
-          notes: contact.notes,
+          note: contact.note,
         }
       : {
           firstName: "",
@@ -85,9 +76,10 @@ export function ContactForm({
           department: "",
           companyId: "",
           category: "lead",
-          notes: "",
+          note: "",
         },
   });
+
 
   const onSubmit = async (values: z.infer<typeof contactSchema>) => {
     try {
@@ -222,127 +214,11 @@ export function ContactForm({
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="mobile"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mobile Number</FormLabel>
-                        <FormControl>
-                          <Input placeholder="(555) 987-6543" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
             </div>
 
-            <div className="border-t border-gray-200" />
 
-            {/* Professional Information */}
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Professional Information
-              </h2>
-              <div className="grid gap-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="jobTitle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Sales Manager" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="department"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Department</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Sales" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="companyId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue
-                              placeholder={
-                                isLoadingCompanies
-                                  ? "Loading..."
-                                  : "Select a company"
-                              }
-                            />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {companies?.map((company) => (
-                            <SelectItem key={company.id} value={company.id}>
-                              {company.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category *</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="lead">Lead</SelectItem>
-                          <SelectItem value="prospect">Prospect</SelectItem>
-                          <SelectItem value="customer">Customer</SelectItem>
-                          <SelectItem value="partner">Partner</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormDescription className="flex items-center gap-1 text-sm text-gray-500">
-                        <Info className="h-3 w-3" />
-                        Select the appropriate category for this contact
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
 
             <div className="border-t border-gray-200" />
 
@@ -353,13 +229,13 @@ export function ContactForm({
               </h2>
               <FormField
                 control={form.control}
-                name="notes"
+                name="note"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes</FormLabel>
+                    <FormLabel>note</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Add any relevant notes about the contact..."
+                        placeholder="Add any relevant note about the contact..."
                         className="min-h-[120px] resize-none"
                         {...field}
                       />

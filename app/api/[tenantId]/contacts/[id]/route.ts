@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Contact from '@/model/contact';
 import dbConnect from '@/lib/dbConnect';
+import { ContactActivityModel } from '@/model/contactActivity';
 
 // GET by ID: Fetch a single contact by ID
 export async function GET(req: Request, { params }: { params: { id: string , tenantId: string} }) {
@@ -28,6 +29,22 @@ export async function PUT(req: Request, { params }: { params: { id: string, tena
   if (!updatedContact) {
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
   }
+
+  // Create an activity log for the contact update
+  // If a note is provided, use it as the description
+  const description = body.note && body.note.trim() !== '' 
+    ? body.note 
+    : `Contact ${updatedContact.firstName} ${updatedContact.lastName || ''} was updated`;
+  
+  const contactActivity = new ContactActivityModel({
+    contactId: id,
+    type: 'note',
+    title: 'Contact Updated',
+    description: description,
+    date: new Date(),
+    tenantId: tenantId
+  });
+  await contactActivity.save();
 
   return NextResponse.json(updatedContact);
 }

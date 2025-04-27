@@ -53,13 +53,24 @@ export async function GET(req: Request,  { params }: { params: { tenantId: strin
 // POST: Create a new contact
 export async function POST(req: Request,  { params }: { params: { tenantId: string } }) {
   const body = await req.json();
-if(!body?.companyId)
-{
-    body.companyId = undefined
-}
+  if(!body?.companyId)
+  {
+      body.companyId = undefined
+  }
   await dbConnect();
   const newContact = new Contact({...body,tenantId: params.tenantId});
   await newContact.save();
+
+  // Create an activity log for the new contact creation
+  const contactActivity = new ContactActivityModel({
+    contactId: newContact._id,
+    type: 'note',
+    title: 'Contact Created',
+    description: `New contact ${newContact.firstName} ${newContact.lastName || ''} was created`,
+    date: new Date(),
+    tenantId: params.tenantId
+  });
+  await contactActivity.save();
 
   return NextResponse.json(newContact, { status: 201 });
 }
