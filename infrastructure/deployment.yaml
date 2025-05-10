@@ -31,7 +31,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: innovcrm-secrets
-              key: stripe-publishable-key
+              key: stripe-publishable-key 
         - name: STRIPE_SECRET_KEY
           valueFrom:
             secretKeyRef:
