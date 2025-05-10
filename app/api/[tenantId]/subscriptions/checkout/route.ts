@@ -3,7 +3,7 @@ import Tenant from "@/model/tenant";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe('sk_test_51RDiNK09P1PAklhLUL5vaEjv7lY9UPiIjlWahpYwirgIu5pOjMbSFmC1NuFPQSoEM4iSDnoMnXLIRsUbV98BcCuP00S0DUlPfC', {
   apiVersion: "2025-03-31.basil",
 });
 

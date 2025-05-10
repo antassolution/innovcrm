@@ -1,3 +1,42 @@
+# mongodb-complete.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-init-script
+data:
+  init-mongo.sh: |
+    #!/bin/bash
+    # This script runs when MongoDB starts for the first time
+    mongosh --eval "
+      if (db.getUser('newuser') == null) {
+        db.createUser({
+          user: 'newuser',
+          pwd: 'newpassword',
+          roles: [
+            { role: 'userAdminAnyDatabase', db: 'admin' },
+            { role: 'readWriteAnyDatabase', db: 'admin' },
+            { role: 'dbAdminAnyDatabase', db: 'admin' }
+          ]
+        });
+        
+        db = db.getSiblingDB('innovcrm');
+        db.createUser({
+          user: 'appuser',
+          pwd: 'apppassword',
+          roles: [
+            { role: 'readWrite', db: 'innovcrm' }
+          ]
+        });
+        
+        db.createCollection('initial');
+        db.initial.insertOne({ setup: 'complete', timestamp: new Date() });
+        
+        print('MongoDB users created successfully!');
+      } else {
+        print('MongoDB users already exist - skipping creation');
+      }
+    "
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,25 +58,49 @@ spec:
         image: mongo:5.0
         ports:
         - containerPort: 27017
-        env:
-        - name: MONGO_INITDB_ROOT_USERNAME
-          value: newuser
-        - name: MONGO_INITDB_ROOT_PASSWORD
-          value: newpassword
-        - name: MONGO_INITDB_DATABASE
-          value: innvocrm
+        command: ["/bin/bash"]
+        args: 
+        - "-c"
+        - |
+          # Start MongoDB without authentication for initialization
+          mongod --bind_ip_all --fork --logpath=/tmp/mongod.log
+          
+          # Wait for MongoDB to start
+          sleep 5
+          
+          # Run the initialization script
+          /docker-entrypoint-initdb.d/init-mongo.sh
+          
+          # Shutdown MongoDB
+          mongod --shutdown
+          
+          # Start MongoDB with authentication enabled
+          exec mongod --bind_ip_all --auth
         volumeMounts:
         - name: mongodb-data
           mountPath: /data/db
+        - name: init-script
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
       volumes:
       - name: mongodb-data
         persistentVolumeClaim:
           claimName: mongodb-pvc
+      - name: init-script
+        configMap:
+          name: mongodb-init-script
+          defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb-service
+  name: mongodb
 spec:
   selector:
     app: mongodb
@@ -45,14 +108,3 @@ spec:
   - port: 27017
     targetPort: 27017
   type: ClusterIP
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongodb-pvc
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 10Gi

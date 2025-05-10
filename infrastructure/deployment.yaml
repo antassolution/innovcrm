@@ -14,9 +14,11 @@ spec:
       labels:
         app: innovcrm
     spec:
+      imagePullSecrets:
+      - name: dockerhub-secret
       containers:
       - name: innovcrm
-        image: registry.yourdomain.com/innovcrm:${TAG}
+        image: kpmrafeeq/innovcrm:latest
         ports:
         - containerPort: 3000
         env:
@@ -40,6 +42,11 @@ spec:
             secretKeyRef:
               name: innovcrm-secrets
               key: stripe-pro-plan-price-id
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: innovcrm-secrets
+              key: jwt-secret
         resources:
           limits:
             cpu: "1"

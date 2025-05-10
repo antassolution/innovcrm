@@ -14,7 +14,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { useState, useEffect } from "react";
 import { createCheckoutSession, getSubscriptionStatus } from '@/services/subscriptionService';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe('pk_test_51RDiNK09P1PAklhLZRGLV8FAHEPg9Q5et9l5YTbSTqsK9sKwm98mSNgonNKD93NQND7UsAnMvhd5Um6N3pD6Ipb900cC0duuLj');
 
 const features = {
   free: [
