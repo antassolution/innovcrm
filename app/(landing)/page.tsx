@@ -121,7 +121,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pro Plan */}
-            <div className="bg-primary text-white p-8 rounded-xl border-2 border-primary shadow-lg relative">
+            {/* <div className="bg-primary text-white p-8 rounded-xl border-2 border-primary shadow-lg relative">
               <div className="absolute -top-4 right-4">
                 <span className="bg-accent text-white text-sm font-medium px-3 py-1 rounded-full">
                   Popular
@@ -160,7 +160,7 @@ export default function LandingPage() {
                   Start Free Trial
                 </Button>
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

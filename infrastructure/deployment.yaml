@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: innovcrm
+  labels:
+    app: innovcrm
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: innovcrm
+  template:
+    metadata:
+      labels:
+        app: innovcrm
+    spec:
+      containers:
+      - name: innovcrm
+        image: registry.yourdomain.com/innovcrm:${TAG}
+        ports:
+        - containerPort: 3000
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: innovcrm-secrets
+              key: mongodb-uri
+        - name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: innovcrm-secrets
+              key: stripe-publishable-key
+        - name: STRIPE_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: innovcrm-secrets
+              key: stripe-secret-key
+        - name: STRIPE_PRO_PLAN_PRICE_ID
+          valueFrom:
+            secretKeyRef:
+              name: innovcrm-secrets
+              key: stripe-pro-plan-price-id
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5

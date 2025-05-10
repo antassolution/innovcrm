@@ -18,7 +18,7 @@ export default function LostDealsPage() {
 
   const loadDeals = async () => {
     try {
-      const data = await dealService.getDealsByStatus('closed-lost');
+      const data = await dealService.getDealsByStatus('lost');
       setDeals(data);
     } catch (error) {
       console.error("Failed to load lost deals:", error);
@@ -36,7 +36,6 @@ export default function LostDealsPage() {
     <div className="space-y-6">
       <DealToolbar onRefresh={loadDeals} showNewDeal={false} />
       <div className="rounded-lg border bg-card">
-        <DealList deals={deals} loading={loading} onRefresh={loadDeals} />
       </div>
     </div>
   );

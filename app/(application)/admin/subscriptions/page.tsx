@@ -119,7 +119,7 @@ export default function SubscriptionsPage() {
         </Card>
 
         {/* Pro Plan */}
-        <Card className="border-primary">
+        {/* <Card className="border-primary">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function SubscriptionsPage() {
               {loading ? "Processing..." : isProPlan ? "Current Plan" : "Upgrade to Pro"}
             </Button>
           </CardFooter>
-        </Card>
+        </Card> */}
       </div>
 
       <div className="mt-8 bg-muted p-6 rounded-lg">

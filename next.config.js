@@ -11,6 +11,9 @@ const nextConfig = {
     }
     return config;
   },
+  reactStrictMode: true,
+  output: 'standalone',
+  swcMinify: true,
 };
 
 module.exports = nextConfig;

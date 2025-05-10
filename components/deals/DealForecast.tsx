@@ -61,7 +61,7 @@ export function DealForecast({ deals }: DealForecastProps) {
                   ${forecast.totalValue.toLocaleString()}
                 </p>
               </div>
-              <Progress value={100} className="mt-2" />
+              {/* <Progress value={100} className="mt-2" /> */}
             </div>
             <div>
               <div className="flex items-center justify-between">
@@ -70,10 +70,10 @@ export function DealForecast({ deals }: DealForecastProps) {
                   ${forecast.weightedValue.toLocaleString()}
                 </p>
               </div>
-              <Progress
-                value={(forecast.weightedValue / forecast.totalValue) * 100}
+              {/* <Progress
+                value={forecast.weightedValue? (forecast.weightedValue / forecast.totalValue) * 100:0}
                 className="mt-2"
-              />
+              /> */}
             </div>
           </div>
         </CardContent>
