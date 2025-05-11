@@ -18,11 +18,10 @@ const stripePromise = loadStripe('pk_test_51RDiNK09P1PAklhLZRGLV8FAHEPg9Q5et9l5Y
 
 const features = {
   free: [
-    "Up to 100 contacts",
-    "Basic lead tracking",
-    "Simple pipeline view",
-    "Email support",
-    "1 team member",
+    "Unlimited contacts & deals",
+    "Complete lead management",
+    "Full master data control",
+    "All features unlocked locally",
   ],
   pro: [
     "Unlimited contacts",

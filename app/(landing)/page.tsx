@@ -7,7 +7,7 @@ export default function LandingPage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative isolate pt-14 bg-gradient-to-b from-primary-light/10 to-transparent">
-        <div className="container mx-auto px-4 py-32 sm:py-48">
+        <div className="container mx-auto px-4 py-32 sm:py-20">
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
               Transform Your Sales Process with
@@ -25,6 +25,19 @@ export default function LandingPage() {
               <Link href="/#features" className="text-sm font-semibold leading-6 text-gray-900">
                 Learn more <span aria-hidden="true">→</span>
               </Link>
+            </div>
+            
+            {/* Docker Command Section */}
+            <div className="mt-10 p-5 bg-gray-100 rounded-lg max-w-3xl mx-auto">
+              <h3 className="text-lg font-semibold mb-2">Quick Start with Docker</h3>
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>Note:</strong> You need to have MongoDB installed as a prerequisite.
+              </p>
+              <div className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto">
+                <code className="text-sm">
+                  docker run -d -p 3000:3000 --name innovcrm -e MONGODB_URI=your_mongodb_uri -e JWT_SECRET=your_jwt_secret kpmrafeeq/innvocrm
+                </code>
+              </div>
             </div>
           </div>
         </div>
@@ -94,7 +107,7 @@ export default function LandingPage() {
             {/* Free Plan */}
             <div className="bg-white p-8 rounded-xl border">
               <h3 className="text-2xl font-bold">Free</h3>
-              <p className="text-gray-600 mt-2">Perfect for getting started</p>
+              <p className="text-gray-600 mt-2">Everything available when running locally</p>
               <div className="mt-6 mb-8">
                 <span className="text-4xl font-bold">$0</span>
                 <span className="text-gray-600">/month</span>
@@ -102,15 +115,19 @@ export default function LandingPage() {
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span>Up to 100 contacts</span>
+                  <span>Unlimited contacts & deals</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span>Basic deal tracking</span>
+                  <span>Complete lead management</span>
                 </li>
                 <li className="flex items-center gap-3">
                   <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                  <span>Email support</span>
+                  <span>Full master data control</span>
+                </li>
+                <li className="flex items-center gap-3">
+                  <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span>All features unlocked locally</span>
                 </li>
               </ul>
               <Link href="/register?plan=free">

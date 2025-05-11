@@ -11,6 +11,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import Link from "next/link";
+import { Zap } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -66,12 +69,12 @@ export function Header() {
     <header className="border-b bg-white">
       <div className="flex h-16 items-center px-4">
         {/* Logo Section - Left */}
-        <div className="flex shrink-0 items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold logo-gradient">Z</span>
-            <span className="font-bold text-xl hidden md:inline-block text-primary">SalesPro</span>
-          </div>
-        </div>
+        <Link href="/" className="flex items-center gap-2">
+            <div className="flex items-center text-primary">
+              <Zap className="h-8 w-8 stroke-[1.5]" />
+              <span className="font-bold text-2xl logo-gradient ml-1">SalesPro</span>
+            </div>
+          </Link>
 
         {/* Search Section - Middle */}
         <div className="flex-1 flex justify-center max-w-2xl mx-auto px-6">
