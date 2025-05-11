@@ -8,10 +8,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - innovcrm.example.com
+    - crm.innovzone.com
     secretName: innovcrm-tls-secret
   rules:
-  - host: innovcrm.example.com
+  - host: crm.innovzone.com
     http:
       paths:
       - path: /
