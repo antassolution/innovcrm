@@ -35,7 +35,7 @@ export default function LandingPage() {
               </p>
               <div className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto">
                 <code className="text-sm">
-                  docker run -d -p 3000:3000 --name innovcrm -e MONGODB_URI=your_mongodb_uri -e JWT_SECRET=your_jwt_secret kpmrafeeq/innvocrm
+                  docker run -d -p 3000:3000 --name innovcrm -e MONGODB_URI=mongodb://user:passsword@localhost:27017/innovcrm?authSource=innovcrm&readPreference=primary&ssl=false&directConnection=true -e JWT_SECRET=your_jwt_secret kpmrafeeq/innvocrm
                 </code>
               </div>
             </div>
