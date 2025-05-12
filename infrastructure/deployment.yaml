@@ -18,7 +18,7 @@ spec:
       - name: dockerhub-secret
       containers:
       - name: innovcrm
-        image: kpmrafeeq/innovcrm:amd64
+        image: kpmrafeeq/innovcrm:latest
         ports:
         - containerPort: 3000
         env:

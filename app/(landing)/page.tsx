@@ -31,7 +31,7 @@ export default function LandingPage() {
             <div className="mt-10 p-5 bg-gray-100 rounded-lg max-w-3xl mx-auto">
               <h3 className="text-lg font-semibold mb-2">Quick Start with Docker</h3>
               <p className="text-sm text-gray-700 mb-3">
-                <strong>Note:</strong> You need to have MongoDB installed as a prerequisite.
+                <strong>Note:</strong> You need to have MongoDB installed as a prerequisite.                docker push kpmrafeeq/innvocrm:amd64
               </p>
               <div className="bg-gray-800 text-gray-200 p-3 rounded-md overflow-x-auto">
                 <code className="text-sm">
