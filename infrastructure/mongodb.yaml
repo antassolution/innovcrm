@@ -91,7 +91,7 @@ spec:
       volumes:
       - name: mongodb-data
         persistentVolumeClaim:
-          claimName: mongodb-pvc
+          claimName: mongodb-pvc-crm
       - name: init-script
         configMap:
           name: mongodb-init-script
