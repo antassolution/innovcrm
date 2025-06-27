@@ -18,7 +18,7 @@ spec:
       - name: dockerhub-secret
       containers:
       - name: wellnoxcrm
-        image: kpmrafeeq/wellnoxcrm:latest
+        image: kpmrafeeq/innovcrm:latest
         ports:
         - containerPort: 3000
         env:
