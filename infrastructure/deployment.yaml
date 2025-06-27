@@ -1,51 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: innovcrm
+  name: wellnoxcrm
   labels:
-    app: innovcrm
+    app: wellnoxcrm
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: innovcrm
+      app: wellnoxcrm
   template:
     metadata:
       labels:
-        app: innovcrm
+        app: wellnoxcrm
     spec:
       imagePullSecrets:
       - name: dockerhub-secret
       containers:
-      - name: innovcrm
-        image: kpmrafeeq/innovcrm:latest
+      - name: wellnoxcrm
+        image: kpmrafeeq/wellnoxcrm:latest
         ports:
         - containerPort: 3000
         env:
         - name: MONGODB_URI
           valueFrom:
             secretKeyRef:
-              name: innovcrm-secrets
+              name: wellnoxcrm-secrets
               key: mongodb-uri
         - name: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
           valueFrom:
             secretKeyRef:
-              name: innovcrm-secrets
+              name: wellnoxcrm-secrets
               key: stripe-publishable-key 
         - name: STRIPE_SECRET_KEY
           valueFrom:
             secretKeyRef:
-              name: innovcrm-secrets
+              name: wellnoxcrm-secrets
               key: stripe-secret-key
         - name: STRIPE_PRO_PLAN_PRICE_ID
           valueFrom:
             secretKeyRef:
-              name: innovcrm-secrets
+              name: wellnoxcrm-secrets
               key: stripe-pro-plan-price-id
         - name: JWT_SECRET
           valueFrom:
             secretKeyRef:
-              name: innovcrm-secrets
+              name: wellnoxcrm-secrets
               key: jwt-secret
         resources:
           limits:
