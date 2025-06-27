@@ -1,8 +1,15 @@
-# mongodb-complete.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: wellnoxcrm-secrets
+type: Opaque
+data:
+  # These values need to be base64 encoded
+  mongodb-uri: # mongodb-complete.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mongodb-init-script
+  name: mongodbcrm-init-script
 data:
   init-mongo.sh: |
     #!/bin/bash
@@ -40,21 +47,21 @@ data:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mongodb
+  name: mongodbcrm
   labels:
-    app: mongodb
+    app: mongodbcrm
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mongodb
+      app: mongodbcrm
   template:
     metadata:
       labels:
-        app: mongodb
+        app: mongodbcrm
     spec:
       containers:
-      - name: mongodb
+      - name: mongodbcrm
         image: mongo:5.0
         ports:
         - containerPort: 27017
@@ -94,16 +101,16 @@ spec:
           claimName: mongodb-pvc-crm
       - name: init-script
         configMap:
-          name: mongodb-init-script
+          name: mongodbcrm-init-script
           defaultMode: 0755
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb
+  name: mongodbcrm
 spec:
   selector:
-    app: mongodb
+    app: mongodbcrm
   ports:
   - port: 27017
     targetPort: 27017
